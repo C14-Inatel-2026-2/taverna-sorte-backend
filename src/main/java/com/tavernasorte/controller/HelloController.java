@@ -1,4 +1,4 @@
-package com.tavernasorte.api;
+package com.tavernasorte.controller;
 
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;

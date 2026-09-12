@@ -1,15 +1,15 @@
-package com.tavernasorte.api.controller;
+package com.tavernasorte.controller;
 
-import com.tavernasorte.api.service.RoletaService;
+import com.tavernasorte.service.RoletaService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class RoletaControle {
+public class RoletaController {
 
     private final RoletaService roletaService;
 
-    public RoletaControle(RoletaService roletaService) {
+    public RoletaController(RoletaService roletaService) {
         this.roletaService = roletaService;
     }
 

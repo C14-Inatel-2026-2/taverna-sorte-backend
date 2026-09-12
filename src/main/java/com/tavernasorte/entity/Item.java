@@ -1,4 +1,4 @@
-package com.tavernasorte.item.model;
+package com.tavernasorte.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,11 +1,10 @@
-package com.tavernasorte.item;
+package com.tavernasorte.entity;
 
-import com.tavernasorte.item.model.Item;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ItemTeste {
+public class ItemTest {
 
     @Test
     void itemCriado() {

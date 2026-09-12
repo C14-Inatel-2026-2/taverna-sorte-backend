@@ -1,4 +1,4 @@
-package com.tavernasorte.api.service;
+package com.tavernasorte.service;
 
 import org.springframework.stereotype.Service;
 
