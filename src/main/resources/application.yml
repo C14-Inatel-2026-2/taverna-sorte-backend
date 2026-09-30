@@ -3,7 +3,7 @@ spring:
     name: taverna-sorte-backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/taverna_sorte
+    url: jdbc:mysql://localhost:3307/taverna_sorte
     username: taverna
     password: taverna123
 
