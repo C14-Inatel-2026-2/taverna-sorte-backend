@@ -1,6 +1,6 @@
-package com.tavernasorte.api.controller;
+package com.tavernasorte.controller;
 
-import com.tavernasorte.api.service.RoletaService;
+import com.tavernasorte.service.RoletaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,19 +13,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RoletaControleTest {
+class RoletaControllerTest {
 
     @Mock
     private RoletaService roletaService;
 
     @InjectMocks
-    private RoletaControle roletaControle;
+    private RoletaController roletaController;
 
     @Test
     void girarDeveRetornarResultadoDoServico() {
         when(roletaService.girar()).thenReturn(7);
 
-        int resultado = roletaControle.girar();
+        int resultado = roletaController.girar();
 
         assertEquals(7, resultado);
         verify(roletaService).girar();
@@ -38,7 +38,7 @@ class RoletaControleTest {
 
         IllegalStateException erro = assertThrows(
                 IllegalStateException.class,
-                () -> roletaControle.girar()
+                () -> roletaController.girar()
         );
 
         assertEquals("Falha ao girar", erro.getMessage());
