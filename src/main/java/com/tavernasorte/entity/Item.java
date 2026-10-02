@@ -14,6 +14,9 @@ public class Item {
 
     private String nome;
     private double preco;
+    private double multiplicador;
+    private double sorte;
+    private String descricao;
 
     public Item() {
 
@@ -37,5 +40,29 @@ public class Item {
 
     public Long getId() {
         return id;
+    }
+
+    public double getMultiplicador() {
+        return multiplicador;
+    }
+
+    public void setMultiplicador(double multiplicador) {
+        this.multiplicador = multiplicador;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public double getSorte() {
+        return sorte;
+    }
+
+    public void setSorte(double sorte) {
+        this.sorte = sorte;
     }
 }

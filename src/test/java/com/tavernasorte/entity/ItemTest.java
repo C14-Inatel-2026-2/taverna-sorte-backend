@@ -31,4 +31,25 @@ public class ItemTest {
         Item item = new Item();
         assertNull(item.getId());
     }
+
+    @Test
+    void setMultiplicadorTeste(){
+        Item item = new Item();
+        item.setMultiplicador(2.0);
+        assertEquals(2.0,item.getMultiplicador());
+    }
+
+    @Test
+    void setSorteTeste(){
+        Item item = new Item();
+        item.setSorte(2.0);
+        assertEquals(2.0, item.getSorte());
+    }
+
+    @Test
+    void setDescricaoTeste(){
+        Item item = new Item();
+        item.setDescricao("Descrição de um item.");
+        assertEquals("Descrição de um item.", item.getDescricao());
+    }
 }
