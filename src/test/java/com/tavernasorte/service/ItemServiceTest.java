@@ -4,12 +4,10 @@ import com.tavernasorte.entity.Item;
 import com.tavernasorte.repository.ItemRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -17,9 +15,6 @@ public class ItemServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
-
-    @InjectMocks
-    private ItemService itemService;
 
     @Test
     void itemExistePorBuscaIDTeste() {
@@ -51,7 +46,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    void buscarItemPorIdTeste() {
+    void buscarPrecoPorIdTeste() {
 
         ItemService itemService = new ItemService(itemRepository);
 
@@ -64,5 +59,18 @@ public class ItemServiceTest {
         Item resultado = itemService.buscarPorId(1L);
 
         assertEquals(5, resultado.getPreco());
+    }
+
+    @Test
+    void itemNaoExistePorBuscaIDTeste() {
+
+        ItemService itemService = new ItemService(itemRepository);
+
+        when(itemRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        Item resultado = itemService.buscarPorId(999L);
+
+        assertNull(resultado);
     }
 }
