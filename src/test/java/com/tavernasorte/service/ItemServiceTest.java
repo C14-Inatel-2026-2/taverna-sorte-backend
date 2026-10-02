@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
@@ -25,13 +26,43 @@ public class ItemServiceTest {
 
         ItemService itemService = new ItemService(itemRepository);
         Item item = new Item();
-        item.setNome("Poção");
-        item.setPreco(5);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
         Item resultado = itemService.buscarPorId(1L);
         assertNotNull(resultado);
+    }
+
+    @Test
+    void buscarNomePorIDTeste() {
+
+        ItemService itemService = new ItemService(itemRepository);
+
+        Item item = new Item();
+        item.setNome("Poção");
+
+        when(itemRepository.findById(1L))
+                .thenReturn(Optional.of(item));
+
+        Item resultado = itemService.buscarPorId(1L);
+
+        assertEquals("Poção", resultado.getNome());
+    }
+
+    @Test
+    void buscarItemPorIdTeste() {
+
+        ItemService itemService = new ItemService(itemRepository);
+
+        Item item = new Item();
+        item.setPreco(5);
+
+        when(itemRepository.findById(1L))
+                .thenReturn(Optional.of(item));
+
+        Item resultado = itemService.buscarPorId(1L);
+
+        assertEquals(5, resultado.getPreco());
     }
 }
