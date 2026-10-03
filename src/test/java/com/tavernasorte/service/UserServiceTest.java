@@ -41,6 +41,7 @@ class UserServiceTest {
     }
 
     @Test
+
     void deveCriarUsuarioComSucesso() {
         String email = "luiz@example.com";
         String password = "senha123";
