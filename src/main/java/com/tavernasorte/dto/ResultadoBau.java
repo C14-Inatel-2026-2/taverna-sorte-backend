@@ -1,6 +1,6 @@
 package com.tavernasorte.dto;
 
-import com.tavernasorte.entity.Simbolo;
+import com.tavernasorte.model.jogo.bau.Simbolo;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.model.jogo.bau;
 
 public enum Simbolo {
     MOEDA(3),
