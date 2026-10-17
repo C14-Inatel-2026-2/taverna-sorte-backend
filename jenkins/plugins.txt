@@ -5,3 +5,4 @@ junit
 configuration-as-code
 job-dsl
 pipeline-stage-view
+htmlpublisher
