@@ -29,5 +29,16 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withCredentials([string(credentialsId: 'render-deploy-hook', variable: 'RENDER_DEPLOY_HOOK')]) {
+                    sh 'curl -fsS -X POST "$RENDER_DEPLOY_HOOK"'
+                }
+            }
+        }
     }
 }

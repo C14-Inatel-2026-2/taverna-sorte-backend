@@ -25,7 +25,7 @@ if (-not (Test-Path .env)) {
 }
 ```
 
-Edite `.env` e defina `JENKINS_ADMIN_ID`, `JENKINS_ADMIN_PASSWORD` e `GITHUB_REPO_URL`. O `.env` é local e não deve ser publicado.
+Edite `.env` e defina `JENKINS_ADMIN_ID`, `JENKINS_ADMIN_PASSWORD`, `GITHUB_REPO_URL` e `RENDER_DEPLOY_HOOK` (veja [Deploy no Render](#deploy-no-render)). O `.env` é local e não deve ser publicado.
 
 A configuração atual acessa o repositório sem autenticação. Para um repositório privado, configure uma credencial no Jenkins e associe seu `credentialsId` à origem Git em `jenkins/casc.yaml`; preencher `GITHUB_USER` e `GITHUB_TOKEN` no `.env` sozinho não habilita a autenticação.
 
@@ -49,7 +49,47 @@ Aguarde a mensagem `Jenkins is fully up and running`. Pressione `Ctrl+C` para sa
 
 O Jenkins busca o código no repositório remoto, então publique suas alterações antes de iniciar o build. Uma nova varredura também pode ser disparada manualmente; a configuração periódica atual é de um minuto.
 
-O estágio **Build** executa `mvn clean package -DskipTests` e arquiva `target/*.jar`. O estágio **Tests** executa `mvn verify`; o Maven roda os testes e gera o relatório HTML de cobertura com JaCoCo. Jenkins publica os resultados JUnit e o relatório de cobertura. A pipeline não inicia a aplicação nem realiza deploy.
+O estágio **Build** executa `mvn clean package -DskipTests` e arquiva `target/*.jar`. O estágio **Tests** executa `mvn verify`; o Maven roda os testes e gera o relatório HTML de cobertura com JaCoCo. Jenkins publica os resultados JUnit e o relatório de cobertura. O estágio **Deploy** roda somente na branch `main` e dispara o deploy no Render.
+
+## Deploy no Render
+
+A aplicação é publicada no Render como um Web Service Docker, construído a partir do `Dockerfile` da raiz. O Auto-Deploy do Render fica desligado: quem dispara o deploy é o estágio **Deploy** do Jenkins, que só roda na `main` e depois que os estágios de build e testes passam.
+
+### Como funciona
+
+1. O estágio **Deploy** faz um `POST` no *Deploy Hook* do serviço no Render.
+2. O Render clona o repositório, constrói a imagem com o `Dockerfile` e sobe a aplicação.
+3. A aplicação usa a porta definida pelo Render na variável `PORT` (localmente continua `8080`).
+
+### Configurar o Jenkins
+
+1. Peça o Deploy Hook a quem administra o serviço no Render. Ele é secreto: não publique no repositório.
+2. Defina `RENDER_DEPLOY_HOOK` no `.env`. O `jenkins/casc.yaml` cria a credencial `render-deploy-hook` a partir dessa variável.
+3. Recrie o container para o Jenkins ler o `.env` atualizado:
+
+```powershell
+docker compose up -d --build --force-recreate jenkins
+```
+
+Sem o Deploy Hook no `.env`, o estágio **Deploy** falha nos builds da `main`. O estágio só confirma que o deploy foi disparado; acompanhe a conclusão no painel do Render.
+
+### Banco de dados em produção
+
+O `application.yml` aponta para o MySQL local. No Render, a conexão é definida pelas variáveis de ambiente do serviço, que substituem os valores do arquivo:
+
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+
+### Testar a imagem localmente
+
+Com o MySQL do `docker-compose.yml` em execução:
+
+```powershell
+docker compose up -d mysql
+docker build -t taverna-backend .
+docker run --rm -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/taverna_sorte taverna-backend
+```
 
 ## Arquitetura de Camadas (Package-by-Layer)
 
