@@ -5,17 +5,28 @@ import java.util.List;
 
 public class Inventario {
 
-    private final int limiteItens = 3;
+    private static final int LIMITE_ITENS = 3;
 
     private List<Item> itens = new ArrayList<>();
 
-    public boolean adicionarItem(Item item) {
+    public void adicionarItem(Item item) {
 
-        if (itens.size() >= limiteItens) {
-            return false;
+        if (item == null || itens.size() >= LIMITE_ITENS) {
         }
 
         itens.add(item);
-        return true;
     }
+
+    public int getLimiteItens() {
+        return LIMITE_ITENS;
+    }
+
+    public List<Item> getItens() {
+        return List.copyOf(itens);
+    }
+
+    public void removerItem(Item item) {
+        itens.remove(item);
+    }
+
 }
