@@ -25,11 +25,12 @@ public class Jogador {
         }
     }
 
-    public void debitar(int valor) {
+    public boolean debitar(int valor) {
         if (valor <= 0 || saldo < valor) {
-            return;
+            return false;
         }
         saldo -= valor;
+        return true;
     }
 
     public String getUsername() {
