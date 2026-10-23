@@ -12,6 +12,7 @@ public class Inventario {
     public void adicionarItem(Item item) {
 
         if (item == null || itens.size() >= LIMITE_ITENS) {
+            return;
         }
 
         itens.add(item);
