@@ -7,6 +7,12 @@ import static org.junit.jupiter.api.Assertions.*;
 public class InventarioTest {
 
     @Test
+    void limiteDoInventarioTeste(){
+        Inventario inventario = new Inventario();
+        assertEquals(3, inventario.getLimiteItens());
+    }
+
+    @Test
     void inventarioVazioTeste() {
         Inventario inventario = new Inventario();
         assertTrue(inventario.getItens().isEmpty());
@@ -53,4 +59,14 @@ public class InventarioTest {
 
         assertTrue(inventario.getItens().isEmpty());
     }
+
+    @Test
+    void removerItemInexistenteTeste(){
+        Inventario inventario = new Inventario();
+        Item item = new Item();
+        inventario.removerItem(item);
+
+        assertEquals(0, inventario.getItens().size());
+    }
+
 }
