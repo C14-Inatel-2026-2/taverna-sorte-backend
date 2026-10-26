@@ -13,7 +13,7 @@ public class Item {
     private Long id; // Long aceita valores nulos antes do ID ser gerado pelo banco
 
     private String nome;
-    private double preco;
+    private int preco;
     private double multiplicador;
     private double sorte;
     private String descricao;
@@ -30,11 +30,11 @@ public class Item {
         this.nome = nome;
     }
 
-    public double getPreco() {
+    public int getPreco() {
         return preco;
     }
 
-    public void setPreco(double preco) {
+    public void setPreco(int preco) {
         this.preco = preco;
     }
 
