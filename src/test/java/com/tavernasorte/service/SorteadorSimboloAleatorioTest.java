@@ -1,6 +1,6 @@
-package com.tavernasorte.service.jogo;
+package com.tavernasorte.service;
 
-import com.tavernasorte.model.jogo.bau.Simbolo;
+import com.tavernasorte.model.Simbolo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;

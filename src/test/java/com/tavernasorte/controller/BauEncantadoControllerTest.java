@@ -1,10 +1,11 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.dto.ResultadoBau;
+import com.tavernasorte.dto.BauEncantadoResponse;
 import com.tavernasorte.exception.ApostaInvalidaException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
-import com.tavernasorte.model.jogo.bau.Simbolo;
-import com.tavernasorte.service.jogo.BauEncantadoService;
+import com.tavernasorte.model.Simbolo;
+import com.tavernasorte.model.ValorApostaBau;
+import com.tavernasorte.service.BauEncantadoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.hamcrest.Matchers.contains;
@@ -30,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class BauEncantadoControllerTest {
 
     private static final String ROTA = "/bau/abrir";
+    private static final BigDecimal APOSTA = new BigDecimal("10.0");
 
     @Mock
     private BauEncantadoService bauEncantadoService;
@@ -43,19 +46,22 @@ class BauEncantadoControllerTest {
                 .build();
     }
 
-    @Test
-    void abrirComApostaValidaDeveRetornar200ComSimbolosEPremio() throws Exception {
-        ResultadoBau resultado = new ResultadoBau(List.of(Simbolo.DRAGAO, Simbolo.DRAGAO, Simbolo.DRAGAO), 200.0);
-        when(bauEncantadoService.abrir(10.0)).thenReturn(resultado);
+    @ParameterizedTest
+    @ValueSource(strings = {"valorAposta", "valor"})
+    void abrirDeveAceitarONomeAtualEOAnteriorDoCampo(String campo) throws Exception {
+        BauEncantadoResponse resultado = new BauEncantadoResponse(
+                List.of(Simbolo.DRAGAO, Simbolo.DRAGAO, Simbolo.DRAGAO), new BigDecimal("200.00"));
+        when(bauEncantadoService.abrir(APOSTA)).thenReturn(resultado);
 
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valor\":10.0}"))
+                        .content("{\"" + campo + "\":10.0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("DRAGAO", "DRAGAO", "DRAGAO")))
+                .andExpect(jsonPath("$.premio").isNumber())
                 .andExpect(jsonPath("$.premio").value(200.0));
 
-        verify(bauEncantadoService).abrir(10.0);
+        verify(bauEncantadoService).abrir(APOSTA);
     }
 
     @ParameterizedTest
@@ -63,7 +69,7 @@ class BauEncantadoControllerTest {
     void abrirComValorNaoPositivoDeveRetornar400SemChamarOServico(String valor) throws Exception {
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valor\":" + valor + "}"))
+                        .content("{\"valorAposta\":" + valor + "}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
 
@@ -71,7 +77,7 @@ class BauEncantadoControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"{}", "{\"valor\":null}"})
+    @ValueSource(strings = {"{}", "{\"valorAposta\":null}", "{\"valor\":null}"})
     void abrirSemValorDeveRetornar400SemChamarOServico(String corpo) throws Exception {
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,7 +89,22 @@ class BauEncantadoControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"{\"valor\":\"abc\"}", "{valor:", ""})
+    @ValueSource(strings = {"0.001", "10.000", "1000000000000.00", "1e308"})
+    void abrirComValorForaDosLimitesDeveRetornar400SemChamarOServico(String valor) throws Exception {
+        mockMvc.perform(post(ROTA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"valorAposta\":" + valor + "}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(ValorApostaBau.FORMATO_INVALIDO));
+
+        verifyNoInteractions(bauEncantadoService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"valorAposta\":\"abc\"}", "{valorAposta:", "",
+            "{\"valorAposta\":\"NaN\"}", "{\"valorAposta\":\"Infinity\"}", "{\"valorAposta\":NaN}"
+    })
     void abrirComCorpoIlegivelDeveRetornar400SemChamarOServico(String corpo) throws Exception {
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -96,12 +117,12 @@ class BauEncantadoControllerTest {
 
     @Test
     void abrirQuandoServicoRejeitarApostaDeveRetornar400ComMensagemDoServico() throws Exception {
-        when(bauEncantadoService.abrir(10.0))
+        when(bauEncantadoService.abrir(APOSTA))
                 .thenThrow(new ApostaInvalidaException("O valor da aposta deve ser maior que zero"));
 
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valor\":10.0}"))
+                        .content("{\"valorAposta\":10.0}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
     }
