@@ -1,15 +1,16 @@
 package com.tavernasorte.dto;
 
-import com.tavernasorte.entity.Simbolo;
+import com.tavernasorte.model.Simbolo;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-public class ResultadoBau {
+public class BauEncantadoResponse {
 
     private final List<Simbolo> simbolos;
-    private final double premio;
+    private final BigDecimal premio;
 
-    public ResultadoBau(List<Simbolo> simbolos, double premio) {
+    public BauEncantadoResponse(List<Simbolo> simbolos, BigDecimal premio) {
         this.simbolos = List.copyOf(simbolos);
         this.premio = premio;
     }
@@ -18,7 +19,7 @@ public class ResultadoBau {
         return simbolos;
     }
 
-    public double getPremio() {
+    public BigDecimal getPremio() {
         return premio;
     }
 }

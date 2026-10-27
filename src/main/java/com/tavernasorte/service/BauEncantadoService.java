@@ -1,9 +1,11 @@
 package com.tavernasorte.service;
 
-import com.tavernasorte.dto.ResultadoBau;
-import com.tavernasorte.entity.Simbolo;
+import com.tavernasorte.dto.BauEncantadoResponse;
+import com.tavernasorte.model.Simbolo;
+import com.tavernasorte.model.ValorApostaBau;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,28 +21,26 @@ public class BauEncantadoService {
         this.sorteadorSimbolo = sorteadorSimbolo;
     }
 
-    public ResultadoBau abrir(double valorAposta) {
-        if (valorAposta <= 0) {
-            throw new IllegalArgumentException("O valor da aposta deve ser maior que zero");
-        }
+    public BauEncantadoResponse abrir(BigDecimal valorAposta) {
+        ValorApostaBau aposta = new ValorApostaBau(valorAposta);
 
         List<Simbolo> simbolos = new ArrayList<>();
         for (int i = 0; i < QUANTIDADE_SIMBOLOS; i++) {
             simbolos.add(sorteadorSimbolo.sortear());
         }
 
-        return new ResultadoBau(simbolos, calcularPremio(simbolos, valorAposta));
+        return new BauEncantadoResponse(simbolos, calcularPremio(simbolos, aposta));
     }
 
-    public double calcularPremio(List<Simbolo> simbolos, double valorAposta) {
+    private BigDecimal calcularPremio(List<Simbolo> simbolos, ValorApostaBau aposta) {
         int simbolosDistintos = new HashSet<>(simbolos).size();
 
         if (simbolosDistintos == 1) {
-            return valorAposta * simbolos.get(0).getMultiplicador();
+            return aposta.valor().multiply(BigDecimal.valueOf(simbolos.get(0).getMultiplicador()));
         }
         if (simbolosDistintos == 2) {
-            return valorAposta; // par de símbolos iguais devolve a aposta
+            return aposta.valor(); // par de símbolos iguais devolve a aposta
         }
-        return 0;
+        return BigDecimal.ZERO.setScale(ValorApostaBau.CASAS_DECIMAIS);
     }
 }

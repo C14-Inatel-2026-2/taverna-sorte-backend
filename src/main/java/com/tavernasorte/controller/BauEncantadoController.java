@@ -1,8 +1,9 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.dto.ApostaBauRequest;
-import com.tavernasorte.dto.ResultadoBau;
+import com.tavernasorte.dto.BauEncantadoRequest;
+import com.tavernasorte.dto.BauEncantadoResponse;
 import com.tavernasorte.service.BauEncantadoService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +18,7 @@ public class BauEncantadoController {
     }
 
     @PostMapping("/bau/abrir")
-    public ResultadoBau abrir(@RequestBody ApostaBauRequest aposta) {
-        return bauEncantadoService.abrir(aposta.getValor());
+    public BauEncantadoResponse abrir(@Valid @RequestBody BauEncantadoRequest request) {
+        return bauEncantadoService.abrir(request.getValorAposta());
     }
 }

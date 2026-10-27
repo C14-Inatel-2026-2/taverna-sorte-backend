@@ -1,6 +1,6 @@
 package com.tavernasorte.service;
 
-import com.tavernasorte.entity.Simbolo;
+import com.tavernasorte.model.Simbolo;
 
 public interface SorteadorSimbolo {
 

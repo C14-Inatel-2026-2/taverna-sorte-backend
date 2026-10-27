@@ -23,6 +23,17 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(ApostaInvalidaException.class)
+    public ResponseEntity<Map<String, String>> handleApostaInvalida(
+            ApostaInvalidaException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", exception.getMessage()
+                ));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(
             MethodArgumentNotValidException exception

@@ -133,3 +133,62 @@ A aplicação segue o padrão arquitetural em camadas, onde cada pacote possui r
 - **Por que ela existe se já temos a `entity`?**
   - **Segurança:** Evita expor dados confidenciais ou colunas internas do banco (ex: senha criptografada, flags de auditoria).
   - **Controle:** Quando o usuário cadastra um item, ele não envia o `id` (pois o banco gera). Então podemos ter um `ItemRequestDTO(String nome, double preco)` para entrada e um `ItemResponseDTO(Long id, String nome, double preco)` para saída.
+
+## Organização do Baú Encantado
+
+O baú segue a organização por camada, com suas classes distribuídas assim:
+
+```text
+controller/BauEncantadoController.java
+dto/BauEncantadoRequest.java
+dto/BauEncantadoResponse.java
+service/BauEncantadoService.java
+service/SorteadorSimbolo.java
+service/SorteadorSimboloAleatorio.java
+model/Simbolo.java
+model/ValorApostaBau.java
+```
+
+A interface `SorteadorSimbolo` permite substituir o gerador aleatório por um
+mock nos testes. `Simbolo` fica em `model/` por ser um enum do jogo, sem
+representar uma entidade persistida.
+
+A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos
+`simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par
+devolve a aposta e três símbolos diferentes não pagam prêmio.
+
+A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de
+`@JsonAlias`. Envie apenas um dos nomes em cada requisição.
+
+Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
+`ValorApostaBau` centraliza as regras: valor obrigatório, positivo, com até
+12 dígitos inteiros e 2 casas decimais. O limite técnico é
+`999999999999.99`; ele não define o balanceamento econômico dos jogos.
+Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
+silencioso. Valores aceitos são normalizados para duas casas decimais,
+e o prêmio continua sendo um número no JSON.
+
+A entrada é validada com Bean Validation em `BauEncantadoRequest` (`@NotNull`,
+`@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo
+formato usado em usuários (`{"error": "..."}`):
+
+| Requisição | Status | `error` |
+| --- | --- | --- |
+| `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
+| `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
+| Mais de 2 casas decimais ou mais de 12 dígitos inteiros | 400 | A aposta deve ter no máximo 12 dígitos inteiros e 2 casas decimais |
+| `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
+
+O `BauEncantadoService` também valida o valor por meio de `ValorApostaBau`
+antes de sortear e lança `ApostaInvalidaException`, pois pode ser chamado sem
+passar pelo controller. O cálculo do prêmio é privado e recebe somente
+os dados preparados por `abrir`.
+
+Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm
+a implementação da `main`, incluindo seus pacotes e contratos.
+
+Para executar a suíte com Java 21 e Maven:
+
+```shell
+mvn clean test
+```

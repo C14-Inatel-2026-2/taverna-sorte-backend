@@ -1,6 +1,6 @@
 package com.tavernasorte.service;
 
-import com.tavernasorte.entity.Simbolo;
+import com.tavernasorte.model.Simbolo;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -10,7 +10,15 @@ public class SorteadorSimboloAleatorio implements SorteadorSimbolo {
 
     private static final Simbolo[] SIMBOLOS = Simbolo.values();
 
-    private final Random random = new Random();
+    private final Random random;
+
+    public SorteadorSimboloAleatorio() {
+        this(new Random());
+    }
+
+    SorteadorSimboloAleatorio(Random random) {
+        this.random = random;
+    }
 
     @Override
     public Simbolo sortear() {
