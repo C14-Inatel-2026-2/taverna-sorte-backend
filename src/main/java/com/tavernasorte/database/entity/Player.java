@@ -1,35 +1,38 @@
 package com.tavernasorte.database.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Player {
 
-    private int saldo;
-    private Inventory inventario;
+    @JsonProperty("saldo")
+    private int balance;
+    private Inventory inventory;
     private String username;
 
     public Player() {
-        this.saldo = 0;
-        this.inventario = new Inventory();
+        this.balance = 0;
+        this.inventory = new Inventory();
     }
 
-    public int getSaldo() {
-        return saldo;
+    public int getBalance() {
+        return balance;
     }
 
     public Inventory getInventory() {
-        return inventario;
+        return inventory;
     }
 
-    public void adicionarSaldo(int valor) {
-        if (valor > 0) {
-            saldo += valor;
+    public void addBalance(int value) {
+        if (value > 0) {
+            balance += value;
         }
     }
 
-    public boolean debitar(int valor) {
-        if (valor <= 0 || saldo < valor) {
+    public boolean debit(int value) {
+        if (value <= 0 || balance < value) {
             return false;
         }
-        saldo -= valor;
+        balance -= value;
         return true;
     }
 

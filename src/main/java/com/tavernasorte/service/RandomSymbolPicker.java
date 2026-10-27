@@ -8,7 +8,7 @@ import java.util.Random;
 @Component
 public class RandomSymbolPicker implements SymbolPicker {
 
-    private static final Symbol[] SIMBOLOS = Symbol.values();
+    private static final Symbol[] SYMBOLS = Symbol.values();
 
     private final Random random;
 
@@ -21,7 +21,7 @@ public class RandomSymbolPicker implements SymbolPicker {
     }
 
     @Override
-    public Symbol sortear() {
-        return SIMBOLOS[random.nextInt(SIMBOLOS.length)];
+    public Symbol pick() {
+        return SYMBOLS[random.nextInt(SYMBOLS.length)];
     }
 }

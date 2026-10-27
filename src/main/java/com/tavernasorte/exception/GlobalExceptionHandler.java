@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidBetException.class)
-    public ResponseEntity<Map<String, String>> handleApostaInvalida(
+    public ResponseEntity<Map<String, String>> handleInvalidBet(
             InvalidBetException exception
     ) {
         return ResponseEntity

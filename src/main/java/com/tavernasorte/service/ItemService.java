@@ -13,7 +13,7 @@ public class ItemService {
         this.itemRepository = itemRepository;
     }
 
-    public Item buscarPorId(Long id) {
+    public Item findById(Long id) {
         return itemRepository.findById(id).orElse(null);
     }
 }

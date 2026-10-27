@@ -27,104 +27,104 @@ class DiceServiceTest {
     }
 
     @Test
-    void playComDadosDoisETresDeveRetornarSomaCinco() {
+    void shouldReturnFiveForDiceTwoAndThree() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
+        DicePlayResponse result = diceService.play(BetType.LOW, 10.0);
 
-        assertEquals(5, resultado.getSoma());
+        assertEquals(5, result.getSum());
     }
 
     @Test
-    void playComApostaLowESomaCincoDeveVencer() {
+    void shouldWinLowBetWithSumFive() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
+        DicePlayResponse result = diceService.play(BetType.LOW, 10.0);
 
-        assertTrue(resultado.isVenceu());
+        assertTrue(result.isWon());
     }
 
     @Test
-    void playComApostaLowESomaCincoDevePagarODobro() {
+    void shouldPayDoubleForWinningLowBet() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
+        DicePlayResponse result = diceService.play(BetType.LOW, 10.0);
 
-        assertEquals(20.0, resultado.getPremio());
+        assertEquals(20.0, result.getPrize());
     }
 
     @Test
-    void playComDadosTresEQuatroDeveRetornarSomaSete() {
+    void shouldReturnSevenForDiceThreeAndFour() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
+        DicePlayResponse result = diceService.play(BetType.SEVEN, 10.0);
 
-        assertEquals(7, resultado.getSoma());
+        assertEquals(7, result.getSum());
     }
 
     @Test
-    void playComApostaSevenESomaSeteDeveVencer() {
+    void shouldWinSevenBetWithSumSeven() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
+        DicePlayResponse result = diceService.play(BetType.SEVEN, 10.0);
 
-        assertTrue(resultado.isVenceu());
+        assertTrue(result.isWon());
     }
 
     @Test
-    void playComApostaSevenESomaSeteDevePagarOQuadruplo() {
+    void shouldPayQuadrupleForWinningSevenBet() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
+        DicePlayResponse result = diceService.play(BetType.SEVEN, 10.0);
 
-        assertEquals(40.0, resultado.getPremio());
+        assertEquals(40.0, result.getPrize());
     }
 
     @Test
-    void playComDadosCincoECincoDeveRetornarSomaDez() {
+    void shouldReturnTenForDiceFiveAndFive() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
+        DicePlayResponse result = diceService.play(BetType.HIGH, 10.0);
 
-        assertEquals(10, resultado.getSoma());
+        assertEquals(10, result.getSum());
     }
 
     @Test
-    void playComApostaHighESomaDezDeveVencer() {
+    void shouldWinHighBetWithSumTen() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
+        DicePlayResponse result = diceService.play(BetType.HIGH, 10.0);
 
-        assertTrue(resultado.isVenceu());
+        assertTrue(result.isWon());
     }
 
     @Test
-    void playComApostaHighESomaDezDevePagarODobro() {
+    void shouldPayDoubleForWinningHighBet() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
+        DicePlayResponse result = diceService.play(BetType.HIGH, 10.0);
 
-        assertEquals(20.0, resultado.getPremio());
+        assertEquals(20.0, result.getPrize());
     }
 
     @Test
-    void playSemMockComValorZeroDeveLancarExcecao() {
-        DiceRoller dadoFixo = () -> 1;
-        DiceService servicoSemMock = new DiceService(dadoFixo);
+    void shouldRejectZeroBetWithoutMock() {
+        DiceRoller fixedDie = () -> 1;
+        DiceService serviceWithoutMock = new DiceService(fixedDie);
 
         assertThrows(IllegalArgumentException.class,
-                () -> servicoSemMock.play(BetType.LOW, 0.0));
+                () -> serviceWithoutMock.play(BetType.LOW, 0.0));
     }
 
 
     @Test
-    void playSemMockComApostaLowESomaDozeDevePerder() {
-        DiceRoller dadoFixo = () -> 6;
-        DiceService service = new DiceService(dadoFixo);
+    void shouldLoseLowBetWithSumTwelveWithoutMock() {
+        DiceRoller fixedDie = () -> 6;
+        DiceService service = new DiceService(fixedDie);
 
-        DicePlayResponse resultado =
+        DicePlayResponse result =
                 service.play(BetType.LOW, 10.0);
 
-        assertEquals(0.0, resultado.getPremio());
+        assertEquals(0.0, result.getPrize());
     }
 }

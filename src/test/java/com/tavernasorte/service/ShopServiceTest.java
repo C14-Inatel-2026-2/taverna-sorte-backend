@@ -17,279 +17,279 @@ class ShopServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
-    private ShopService lojaService;
+    private ShopService shopService;
 
     @Test
-    void comprarItemTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldBuyItem() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertTrue(lojaService.comprarItem(jogador, 1L));
+        assertTrue(shopService.buyItem(player, 1L));
     }
 
     @Test
-    void saldoPlayerAposCompraTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldDebitPlayerBalanceAfterPurchase() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertEquals(50, jogador.getSaldo());
+        assertEquals(50, player.getBalance());
     }
 
     @Test
-    void jogadorTemItemAposCompraTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldAddPurchasedItemToPlayerInventory() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertTrue(jogador.getInventario().getItens().contains(item));
+        assertTrue(player.getInventory().getItems().contains(item));
     }
 
     @Test
-    void comprarItemPlayerNuloTeste() {
-        lojaService = new ShopService(itemRepository);
+    void shouldRejectPurchaseForNullPlayer() {
+        shopService = new ShopService(itemRepository);
 
-        assertFalse(lojaService.comprarItem(null, 1L));
+        assertFalse(shopService.buyItem(null, 1L));
     }
 
     @Test
-    void comprarItemIdNuloTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
+    void shouldRejectPurchaseWithNullItemId() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
 
-        assertFalse(lojaService.comprarItem(jogador, null));
+        assertFalse(shopService.buyItem(player, null));
     }
 
     @Test
-    void saldoPlayerAposItemIdNuloTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldPreserveBalanceForNullItemId() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
-        lojaService.comprarItem(jogador, null);
+        shopService.buyItem(player, null);
 
-        assertEquals(100, jogador.getSaldo());
+        assertEquals(100, player.getBalance());
     }
 
     @Test
-    void comprarItemInexistenteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldRejectPurchaseOfMissingItem() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        assertFalse(lojaService.comprarItem(jogador, 99L));
+        assertFalse(shopService.buyItem(player, 99L));
     }
 
     @Test
-    void saldoPlayerAposItemInexistenteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldPreserveBalanceForMissingItem() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        lojaService.comprarItem(jogador, 99L);
+        shopService.buyItem(player, 99L);
 
-        assertEquals(100, jogador.getSaldo());
+        assertEquals(100, player.getBalance());
     }
 
     @Test
-    void inventarioVazioPlayerAposCompraItemInexistenteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldKeepInventoryEmptyForMissingItem() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        lojaService.comprarItem(jogador, 99L);
+        shopService.buyItem(player, 99L);
 
-        assertTrue(jogador.getInventario().getItens().isEmpty());
+        assertTrue(player.getInventory().getItems().isEmpty());
     }
 
     @Test
-    void comprarItemSaldoInsuficienteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(20);
+    void shouldRejectPurchaseWithInsufficientBalance() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(20);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertFalse(lojaService.comprarItem(jogador, 1L));
+        assertFalse(shopService.buyItem(player, 1L));
     }
 
     @Test
-    void saldoPlayerAposSaldoInsuficienteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(20);
+    void shouldPreserveInsufficientBalance() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(20);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertEquals(20, jogador.getSaldo());
+        assertEquals(20, player.getBalance());
     }
 
     @Test
-    void inventarioVazioPlayerAposSaldoInsuficienteTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(20);
+    void shouldKeepInventoryEmptyWithInsufficientBalance() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(20);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertTrue(jogador.getInventario().getItens().isEmpty());
+        assertTrue(player.getInventory().getItems().isEmpty());
     }
 
     @Test
-    void comprarItemInventarioCheioTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldRejectPurchaseWithFullInventory() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(10);
+        item.setPrice(10);
 
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
 
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        assertFalse(lojaService.comprarItem(jogador, 4L));
+        assertFalse(shopService.buyItem(player, 4L));
     }
 
     @Test
-    void saldoPlayerAposCompraInventarioCheioTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldPreserveBalanceWithFullInventory() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(10);
+        item.setPrice(10);
 
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
 
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 4L);
+        shopService.buyItem(player, 4L);
 
-        assertEquals(100, jogador.getSaldo());
+        assertEquals(100, player.getBalance());
     }
 
     @Test
-    void inventarioPlayerAposCompraInventarioCheioTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
+    void shouldPreserveFullInventoryAfterRejectedPurchase() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(100);
 
         Item item = new Item();
-        item.setPreco(10);
+        item.setPrice(10);
 
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
-        jogador.getInventario().adicionarItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
+        player.getInventory().addItem(item);
 
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 4L);
+        shopService.buyItem(player, 4L);
 
-        assertEquals(3, jogador.getInventario().getItens().size());
+        assertEquals(3, player.getInventory().getItems().size());
     }
 
     @Test
-    void comprarItemComSaldoExatoTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(50);
+    void shouldAllowPurchaseWithExactBalance() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(50);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertTrue(lojaService.comprarItem(jogador, 1L));
+        assertTrue(shopService.buyItem(player, 1L));
     }
 
     @Test
-    void saldoPlayerCompraItemComSaldoExatoTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(50);
+    void shouldSpendEntireBalanceOnExactPricePurchase() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(50);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertEquals(0, jogador.getSaldo());
+        assertEquals(0, player.getBalance());
     }
 
     @Test
-    void inventarioPlayerCompraItemComSaldoExatoTeste() {
-        lojaService = new ShopService(itemRepository);
-        Player jogador = new Player();
-        jogador.adicionarSaldo(50);
+    void shouldAddItemAfterExactBalancePurchase() {
+        shopService = new ShopService(itemRepository);
+        Player player = new Player();
+        player.addBalance(50);
 
         Item item = new Item();
-        item.setPreco(50);
+        item.setPrice(50);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        lojaService.comprarItem(jogador, 1L);
+        shopService.buyItem(player, 1L);
 
-        assertTrue(jogador.getInventario().getItens().contains(item));
+        assertTrue(player.getInventory().getItems().contains(item));
     }
 }

@@ -23,31 +23,31 @@ class RandomSymbolPickerTest {
 
     @ParameterizedTest
     @EnumSource(Symbol.class)
-    void sortearDeveConverterOIndiceSorteadoNoSymbolCorrespondente(Symbol esperado) {
-        RandomSymbolPicker sorteador = new RandomSymbolPicker(random);
-        when(random.nextInt(Symbol.values().length)).thenReturn(esperado.ordinal());
+    void shouldReturnSymbolAtRandomIndex(Symbol expected) {
+        RandomSymbolPicker picker = new RandomSymbolPicker(random);
+        when(random.nextInt(Symbol.values().length)).thenReturn(expected.ordinal());
 
-        Symbol sorteado = sorteador.sortear();
+        Symbol picked = picker.pick();
 
-        assertEquals(esperado, sorteado);
+        assertEquals(expected, picked);
     }
 
     @Test
-    void sortearDeveUsarTodosOsSymbolsComoLimiteDoSorteio() {
-        RandomSymbolPicker sorteador = new RandomSymbolPicker(random);
+    void shouldUseAllSymbolsAsRandomBound() {
+        RandomSymbolPicker picker = new RandomSymbolPicker(random);
         when(random.nextInt(Symbol.values().length)).thenReturn(0);
 
-        sorteador.sortear();
+        picker.pick();
 
         verify(random).nextInt(Symbol.values().length);
     }
 
     @Test
-    void sortearSemMockDeveRetornarUmSymbolValido() {
-        RandomSymbolPicker sorteador = new RandomSymbolPicker();
+    void shouldPickValidSymbolWithoutMock() {
+        RandomSymbolPicker picker = new RandomSymbolPicker();
 
-        Symbol sorteado = sorteador.sortear();
+        Symbol picked = picker.pick();
 
-        assertNotNull(sorteado);
+        assertNotNull(picked);
     }
 }

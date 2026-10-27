@@ -8,49 +8,49 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ItemTest {
 
     @Test
-    void itemCriado() {
+    void shouldCreateItem() {
         Item item = new Item();
         assertNotNull(item);
     }
 
     @Test
-    void setNomeTeste() {
+    void shouldSetName() {
         Item item = new Item();
-        item.setNome("Poção");
-        assertEquals("Poção", item.getNome());
+        item.setName("Poção");
+        assertEquals("Poção", item.getName());
     }
 
     @Test
-    void setPrecoTeste() {
+    void shouldSetPrice() {
         Item item = new Item();
-        item.setPreco(5);
-        assertEquals(5, item.getPreco());
+        item.setPrice(5);
+        assertEquals(5, item.getPrice());
     }
 
     @Test
-    void getIdTeste() {
+    void shouldStartWithNullId() {
         Item item = new Item();
         assertNull(item.getId());
     }
 
     @Test
-    void setMultiplicadorTeste(){
+    void shouldSetMultiplier(){
         Item item = new Item();
-        item.setMultiplicador(2.0);
-        assertEquals(2.0,item.getMultiplicador());
+        item.setMultiplier(2.0);
+        assertEquals(2.0,item.getMultiplier());
     }
 
     @Test
-    void setSorteTeste(){
+    void shouldSetLuck(){
         Item item = new Item();
-        item.setSorte(2.0);
-        assertEquals(2.0, item.getSorte());
+        item.setLuck(2.0);
+        assertEquals(2.0, item.getLuck());
     }
 
     @Test
-    void setDescricaoTeste(){
+    void shouldSetDescription(){
         Item item = new Item();
-        item.setDescricao("Descrição de um item.");
-        assertEquals("Descrição de um item.", item.getDescricao());
+        item.setDescription("Descrição de um item.");
+        assertEquals("Descrição de um item.", item.getDescription());
     }
 }

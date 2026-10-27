@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RouletteController {
 
-    private final RouletteService roletaService;
+    private final RouletteService rouletteService;
 
-    public RouletteController(RouletteService roletaService) {
-        this.roletaService = roletaService;
+    public RouletteController(RouletteService rouletteService) {
+        this.rouletteService = rouletteService;
     }
 
     @GetMapping("/roleta/girar")
-    public int girar() {
-        return roletaService.girar();
+    public int spin() {
+        return rouletteService.spin();
     }
 }

@@ -17,7 +17,7 @@ public class RouletteService {
         this.random = random;
     }
 
-    public int girar() {
+    public int spin() {
         return random.nextInt(10) + 1;
     }
 }

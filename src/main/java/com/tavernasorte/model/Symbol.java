@@ -1,19 +1,26 @@
 package com.tavernasorte.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum Symbol {
-    MOEDA(3),
-    POCAO(5),
-    ESPADA(8),
-    COROA(12),
-    DRAGAO(20);
+    @JsonProperty("MOEDA")
+    COIN(3),
+    @JsonProperty("POCAO")
+    POTION(5),
+    @JsonProperty("ESPADA")
+    SWORD(8),
+    @JsonProperty("COROA")
+    CROWN(12),
+    @JsonProperty("DRAGAO")
+    DRAGON(20);
 
-    private final int multiplicador;
+    private final int multiplier;
 
-    Symbol(int multiplicador) {
-        this.multiplicador = multiplicador;
+    Symbol(int multiplier) {
+        this.multiplier = multiplier;
     }
 
-    public int getMultiplicador() {
-        return multiplicador;
+    public int getMultiplier() {
+        return multiplier;
     }
 }

@@ -9,60 +9,60 @@ import static org.junit.jupiter.api.Assertions.*;
 public class PlayerTest {
 
     @Test
-    void saldoPlayerNovoTeste() {
-        Player jogador = new Player();
-        assertEquals(0, jogador.getSaldo());
+    void shouldStartWithZeroBalance() {
+        Player player = new Player();
+        assertEquals(0, player.getBalance());
     }
 
     @Test
-    void inventarioVazioPlayerNovoTeste() {
-        Player jogador = new Player();
-        assertTrue(jogador.getInventory().getItens().isEmpty());
+    void shouldCreatePlayerWithEmptyInventory() {
+        Player player = new Player();
+        assertTrue(player.getInventory().getItems().isEmpty());
     }
 
     @Test
-    void adicionarSaldoTeste() {
-        Player jogador = new Player();
+    void shouldAddBalance() {
+        Player player = new Player();
 
-        jogador.adicionarSaldo(100);
+        player.addBalance(100);
 
-        assertEquals(100, jogador.getSaldo());
+        assertEquals(100, player.getBalance());
     }
 
     @Test
-    void adicionarSaldoNegativoTeste() {
-        Player jogador = new Player();
+    void shouldIgnoreNegativeBalanceAddition() {
+        Player player = new Player();
 
-        jogador.adicionarSaldo(-50);
+        player.addBalance(-50);
 
-        assertEquals(0, jogador.getSaldo());
+        assertEquals(0, player.getBalance());
     }
 
     @Test
-    void debitarSaldoTeste() {
-        Player jogador = new Player();
-        jogador.adicionarSaldo(100);
-        jogador.debitar(30);
+    void shouldDebitBalance() {
+        Player player = new Player();
+        player.addBalance(100);
+        player.debit(30);
 
-        assertEquals(70, jogador.getSaldo());
+        assertEquals(70, player.getBalance());
     }
 
     @Test
-    void debitarSaldoInsuficienteTeste() {
-        Player jogador = new Player();
-        jogador.adicionarSaldo(20);
-        jogador.debitar(30);
+    void shouldRejectDebitWithInsufficientBalance() {
+        Player player = new Player();
+        player.addBalance(20);
+        player.debit(30);
 
-        assertEquals(20, jogador.getSaldo());
+        assertEquals(20, player.getBalance());
     }
 
     @Test
-    void jogadorPossuiItemNoInventoryTeste() {
-        Player jogador = new Player();
+    void shouldKeepPlayerItemInInventory() {
+        Player player = new Player();
         Item item = new Item();
 
-        jogador.getInventory().adicionarItem(item);
+        player.getInventory().addItem(item);
 
-        assertTrue(jogador.getInventory().getItens().contains(item));
+        assertTrue(player.getInventory().getItems().contains(item));
     }
 }

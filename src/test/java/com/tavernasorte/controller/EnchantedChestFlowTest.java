@@ -31,13 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EnchantedChestFlowTest {
 
     @Mock
-    private SymbolPicker sorteadorSymbol;
+    private SymbolPicker symbolPicker;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        EnchantedChestService service = new EnchantedChestService(sorteadorSymbol);
+        EnchantedChestService service = new EnchantedChestService(symbolPicker);
         mockMvc = MockMvcBuilders.standaloneSetup(new EnchantedChestController(service))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -45,35 +45,35 @@ class EnchantedChestFlowTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"valorAposta", "valor"})
-    void fluxoCompletoDevePagarDecimalExatoComAmbosOsNomesDoCampo(String campo) throws Exception {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.MOEDA);
+    void shouldPayExactDecimalPrizeWithEitherFieldName(String field) throws Exception {
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + campo + "\":0.1}"))
+                        .content("{\"" + field + "\":0.1}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("MOEDA", "MOEDA", "MOEDA")))
                 .andExpect(jsonPath("$.premio").isNumber())
                 .andExpect(jsonPath("$.premio").value(0.3));
 
-        verify(sorteadorSymbol, times(3)).sortear();
+        verify(symbolPicker, times(3)).pick();
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"valorAposta", "valor"})
-    void apostaQueAntesGeravaInfinitoDeveSerRejeitadaAntesDoSorteio(String campo) throws Exception {
+    void shouldRejectOverflowingBetBeforePickingSymbols(String field) throws Exception {
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + campo + "\":1e308}"))
+                        .content("{\"" + field + "\":1e308}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(ChestBetValue.FORMATO_INVALIDO));
+                .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_FORMAT));
 
-        verifyNoInteractions(sorteadorSymbol);
+        verifyNoInteractions(symbolPicker);
     }
 
     @Test
-    void maiorApostaPermitidaDeveRetornarPremioExatoComoNumeroJson() throws Exception {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.DRAGAO);
+    void shouldReturnExactMaximumPrizeAsJsonNumber() throws Exception {
+        when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)

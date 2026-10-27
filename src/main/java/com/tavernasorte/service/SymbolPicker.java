@@ -4,5 +4,5 @@ import com.tavernasorte.model.Symbol;
 
 public interface SymbolPicker {
 
-    Symbol sortear();
+    Symbol pick();
 }

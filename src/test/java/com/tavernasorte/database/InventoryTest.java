@@ -9,66 +9,66 @@ import static org.junit.jupiter.api.Assertions.*;
 public class InventoryTest {
 
     @Test
-    void limiteDoInventoryTeste(){
-        Inventory inventario = new Inventory();
-        assertEquals(3, inventario.getLimiteItens());
+    void shouldExposeInventoryItemLimit(){
+        Inventory inventory = new Inventory();
+        assertEquals(3, inventory.getItemLimit());
     }
 
     @Test
-    void inventarioVazioTeste() {
-        Inventory inventario = new Inventory();
-        assertTrue(inventario.getItens().isEmpty());
+    void shouldStartWithEmptyInventory() {
+        Inventory inventory = new Inventory();
+        assertTrue(inventory.getItems().isEmpty());
     }
 
     @Test
-    void adicionarItemTeste() {
-        Inventory inventario = new Inventory();
+    void shouldAddItem() {
+        Inventory inventory = new Inventory();
         Item item = new Item();
 
-        inventario.adicionarItem(item);
+        inventory.addItem(item);
 
-        assertTrue(inventario.getItens().contains(item));
+        assertTrue(inventory.getItems().contains(item));
     }
 
     @Test
-    void limiteItensTeste() {
-        Inventory inventario = new Inventory();
+    void shouldEnforceItemLimit() {
+        Inventory inventory = new Inventory();
 
-        inventario.adicionarItem(new Item());
-        inventario.adicionarItem(new Item());
-        inventario.adicionarItem(new Item());
-        inventario.adicionarItem(new Item());
+        inventory.addItem(new Item());
+        inventory.addItem(new Item());
+        inventory.addItem(new Item());
+        inventory.addItem(new Item());
 
-        assertEquals(3, inventario.getItens().size());
+        assertEquals(3, inventory.getItems().size());
     }
 
     @Test
-    void adicionarItemNuloTeste() {
-        Inventory inventario = new Inventory();
+    void shouldIgnoreNullItem() {
+        Inventory inventory = new Inventory();
 
-        inventario.adicionarItem(null);
+        inventory.addItem(null);
 
-        assertTrue(inventario.getItens().isEmpty());
+        assertTrue(inventory.getItems().isEmpty());
     }
 
     @Test
-    void removerItemTeste() {
-        Inventory inventario = new Inventory();
+    void shouldRemoveItem() {
+        Inventory inventory = new Inventory();
         Item item = new Item();
 
-        inventario.adicionarItem(item);
-        inventario.removerItem(item);
+        inventory.addItem(item);
+        inventory.removeItem(item);
 
-        assertTrue(inventario.getItens().isEmpty());
+        assertTrue(inventory.getItems().isEmpty());
     }
 
     @Test
-    void removerItemInexistenteTeste(){
-        Inventory inventario = new Inventory();
+    void shouldIgnoreMissingItemRemoval(){
+        Inventory inventory = new Inventory();
         Item item = new Item();
-        inventario.removerItem(item);
+        inventory.removeItem(item);
 
-        assertEquals(0, inventario.getItens().size());
+        assertEquals(0, inventory.getItems().size());
     }
 
 }

@@ -182,7 +182,7 @@ formato usado em usuários (`{"error": "..."}`):
 O `EnchantedChestService` também valida o valor por meio de `ChestBetValue`
 antes de sortear e lança `InvalidBetException`, pois pode ser chamado sem
 passar pelo controller. O cálculo do prêmio é privado e recebe somente
-os dados preparados por `abrir`.
+os dados preparados por `open`.
 
 Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm
 a implementação da `main`, incluindo seus pacotes e contratos.

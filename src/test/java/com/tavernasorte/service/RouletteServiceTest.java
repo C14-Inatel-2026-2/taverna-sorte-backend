@@ -19,47 +19,47 @@ class RouletteServiceTest {
     @Mock
     private Random random;
 
-    private final RouletteService roletaService = new RouletteService();
+    private final RouletteService rouletteService = new RouletteService();
 
     @Test
-    void girarSemMockDeveRetornarNumeroNoIntervaloDaRoleta() {
-        int resultado = roletaService.girar();
+    void shouldSpinWithinRouletteRangeWithoutMock() {
+        int result = rouletteService.spin();
 
-        assertTrue(resultado >= 1 && resultado <= 10,
+        assertTrue(result >= 1 && result <= 10,
                 "O resultado deve estar entre 1 e 10");
     }
 
     @Test
-    void girarSemMockDeveManterResultadosValidosEmVariasJogadas() {
-        for (int jogada = 0; jogada < 100; jogada++) {
-            int resultado = roletaService.girar();
-            assertTrue(resultado >= 1 && resultado <= 10,
-                    "A jogada " + jogada + " deve estar entre 1 e 10");
+    void shouldKeepSpinsWithinRangeAcrossRounds() {
+        for (int round = 0; round < 100; round++) {
+            int result = rouletteService.spin();
+            assertTrue(result >= 1 && result <= 10,
+                    "A jogada " + round + " deve estar entre 1 e 10");
         }
     }
 
     @Test
-    void girarComMockDeveConverterMaiorValorPossivelParaDez() {
-        RouletteService servicoComMock = new RouletteService(random);
+    void shouldConvertLargestRandomValueToTen() {
+        RouletteService serviceWithMock = new RouletteService(random);
         when(random.nextInt(10)).thenReturn(9);
 
-        int resultado = servicoComMock.girar();
+        int result = serviceWithMock.spin();
 
-        assertEquals(10, resultado);
+        assertEquals(10, result);
         verify(random).nextInt(10);
     }
 
     @Test
-    void girarComMockDevePropagarFalhaDoGerador() {
-        RouletteService servicoComMock = new RouletteService(random);
+    void shouldPropagateRandomGeneratorFailure() {
+        RouletteService serviceWithMock = new RouletteService(random);
         when(random.nextInt(10)).thenThrow(new IllegalStateException("Falha no sorteio"));
 
-        IllegalStateException erro = assertThrows(
+        IllegalStateException error = assertThrows(
                 IllegalStateException.class,
-                servicoComMock::girar
+                serviceWithMock::spin
         );
 
-        assertEquals("Falha no sorteio", erro.getMessage());
+        assertEquals("Falha no sorteio", error.getMessage());
         verify(random).nextInt(10);
     }
 }

@@ -14,9 +14,9 @@ public class ShopService {
         this.itemRepository = itemRepository;
     }
 
-    public boolean comprarItem(Player jogador, Long itemId) {
+    public boolean buyItem(Player player, Long itemId) {
 
-        if (jogador == null || itemId == null) {
+        if (player == null || itemId == null) {
             return false;
         }
 
@@ -26,20 +26,20 @@ public class ShopService {
             return false;
         }
 
-        if (jogador.getSaldo() < item.getPreco()) {
+        if (player.getBalance() < item.getPrice()) {
             return false;
         }
 
-        if (jogador.getInventory().getItens().size()
-                >= jogador.getInventory().getLimiteItens()) {
+        if (player.getInventory().getItems().size()
+                >= player.getInventory().getItemLimit()) {
             return false;
         }
 
-        if (!jogador.debitar(item.getPreco())) {
+        if (!player.debit(item.getPrice())) {
             return false;
         }
 
-        jogador.getInventory().adicionarItem(item);
+        player.getInventory().addItem(item);
 
         return true;
     }

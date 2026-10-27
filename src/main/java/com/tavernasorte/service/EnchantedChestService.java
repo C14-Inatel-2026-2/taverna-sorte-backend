@@ -13,34 +13,34 @@ import java.util.List;
 @Service
 public class EnchantedChestService {
 
-    private static final int QUANTIDADE_SIMBOLOS = 3;
+    private static final int SYMBOL_COUNT = 3;
 
-    private final SymbolPicker sorteadorSymbol;
+    private final SymbolPicker symbolPicker;
 
-    public EnchantedChestService(SymbolPicker sorteadorSymbol) {
-        this.sorteadorSymbol = sorteadorSymbol;
+    public EnchantedChestService(SymbolPicker symbolPicker) {
+        this.symbolPicker = symbolPicker;
     }
 
-    public EnchantedChestResponse abrir(BigDecimal valorAposta) {
-        ChestBetValue aposta = new ChestBetValue(valorAposta);
+    public EnchantedChestResponse open(BigDecimal betAmount) {
+        ChestBetValue bet = new ChestBetValue(betAmount);
 
-        List<Symbol> simbolos = new ArrayList<>();
-        for (int i = 0; i < QUANTIDADE_SIMBOLOS; i++) {
-            simbolos.add(sorteadorSymbol.sortear());
+        List<Symbol> symbols = new ArrayList<>();
+        for (int i = 0; i < SYMBOL_COUNT; i++) {
+            symbols.add(symbolPicker.pick());
         }
 
-        return new EnchantedChestResponse(simbolos, calcularPremio(simbolos, aposta));
+        return new EnchantedChestResponse(symbols, calculatePrize(symbols, bet));
     }
 
-    private BigDecimal calcularPremio(List<Symbol> simbolos, ChestBetValue aposta) {
-        int simbolosDistintos = new HashSet<>(simbolos).size();
+    private BigDecimal calculatePrize(List<Symbol> symbols, ChestBetValue bet) {
+        int distinctSymbolCount = new HashSet<>(symbols).size();
 
-        if (simbolosDistintos == 1) {
-            return aposta.valor().multiply(BigDecimal.valueOf(simbolos.get(0).getMultiplicador()));
+        if (distinctSymbolCount == 1) {
+            return bet.value().multiply(BigDecimal.valueOf(symbols.get(0).getMultiplier()));
         }
-        if (simbolosDistintos == 2) {
-            return aposta.valor(); // par de símbolos iguais devolve a aposta
+        if (distinctSymbolCount == 2) {
+            return bet.value(); // par de símbolos iguais devolve a aposta
         }
-        return BigDecimal.ZERO.setScale(ChestBetValue.CASAS_DECIMAIS);
+        return BigDecimal.ZERO.setScale(ChestBetValue.DECIMAL_PLACES);
     }
 }

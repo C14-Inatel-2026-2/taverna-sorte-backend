@@ -1,33 +1,36 @@
 package com.tavernasorte.database.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Inventory {
 
-    private static final int LIMITE_ITENS = 3;
+    private static final int ITEM_LIMIT = 3;
 
-    private List<Item> itens = new ArrayList<>();
+    @JsonProperty("itens")
+    private List<Item> items = new ArrayList<>();
 
-    public void adicionarItem(Item item) {
+    public void addItem(Item item) {
 
-        if (item == null || itens.size() >= LIMITE_ITENS) {
+        if (item == null || items.size() >= ITEM_LIMIT) {
             return;
         }
 
-        itens.add(item);
+        items.add(item);
     }
 
-    public int getLimiteItens() {
-        return LIMITE_ITENS;
+    @JsonProperty("limiteItens")
+    public int getItemLimit() {
+        return ITEM_LIMIT;
     }
 
-    public List<Item> getItens() {
-        return List.copyOf(itens);
+    public List<Item> getItems() {
+        return List.copyOf(items);
     }
 
-    public void removerItem(Item item) {
-        itens.remove(item);
+    public void removeItem(Item item) {
+        items.remove(item);
     }
 
 }

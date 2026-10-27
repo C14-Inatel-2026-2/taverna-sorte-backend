@@ -1,5 +1,7 @@
 package com.tavernasorte.database.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,57 +14,67 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // gerando o ID do item automaticamente
     private Long id; // Long aceita valores nulos antes do ID ser gerado pelo banco
 
-    private String nome;
-    private int preco;
-    private double multiplicador;
-    private double sorte;
-    private String descricao;
+    @Column(name = "nome")
+    @JsonProperty("nome")
+    private String name;
+    @Column(name = "preco")
+    @JsonProperty("preco")
+    private int price;
+    @Column(name = "multiplicador")
+    @JsonProperty("multiplicador")
+    private double multiplier;
+    @Column(name = "sorte")
+    @JsonProperty("sorte")
+    private double luck;
+    @Column(name = "descricao")
+    @JsonProperty("descricao")
+    private String description;
 
     public Item() {
 
     }
 
-    public String getNome() {
-        return nome;
+    public String getName() {
+        return name;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public int getPreco() {
-        return preco;
+    public int getPrice() {
+        return price;
     }
 
-    public void setPreco(int preco) {
-        this.preco = preco;
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public Long getId() {
         return id;
     }
 
-    public double getMultiplicador() {
-        return multiplicador;
+    public double getMultiplier() {
+        return multiplier;
     }
 
-    public void setMultiplicador(double multiplicador) {
-        this.multiplicador = multiplicador;
+    public void setMultiplier(double multiplier) {
+        this.multiplier = multiplier;
     }
 
-    public String getDescricao() {
-        return descricao;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public double getSorte() {
-        return sorte;
+    public double getLuck() {
+        return luck;
     }
 
-    public void setSorte(double sorte) {
-        this.sorte = sorte;
+    public void setLuck(double luck) {
+        this.luck = luck;
     }
 }

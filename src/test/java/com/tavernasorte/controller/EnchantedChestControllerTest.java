@@ -31,73 +31,73 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class EnchantedChestControllerTest {
 
-    private static final String ROTA = "/bau/abrir";
-    private static final BigDecimal APOSTA = new BigDecimal("10.0");
+    private static final String ROUTE = "/bau/abrir";
+    private static final BigDecimal BET_AMOUNT = new BigDecimal("10.0");
 
     @Mock
-    private EnchantedChestService bauEncantadoService;
+    private EnchantedChestService enchantedChestService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new EnchantedChestController(bauEncantadoService))
+        mockMvc = MockMvcBuilders.standaloneSetup(new EnchantedChestController(enchantedChestService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"valorAposta", "valor"})
-    void abrirDeveAceitarONomeAtualEOAnteriorDoCampo(String campo) throws Exception {
-        EnchantedChestResponse resultado = new EnchantedChestResponse(
-                List.of(Symbol.DRAGAO, Symbol.DRAGAO, Symbol.DRAGAO), new BigDecimal("200.00"));
-        when(bauEncantadoService.abrir(APOSTA)).thenReturn(resultado);
+    void shouldAcceptCurrentAndLegacyFieldNames(String field) throws Exception {
+        EnchantedChestResponse result = new EnchantedChestResponse(
+                List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), new BigDecimal("200.00"));
+        when(enchantedChestService.open(BET_AMOUNT)).thenReturn(result);
 
-        mockMvc.perform(post(ROTA)
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + campo + "\":10.0}"))
+                        .content("{\"" + field + "\":10.0}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("DRAGAO", "DRAGAO", "DRAGAO")))
                 .andExpect(jsonPath("$.premio").isNumber())
                 .andExpect(jsonPath("$.premio").value(200.0));
 
-        verify(bauEncantadoService).abrir(APOSTA);
+        verify(enchantedChestService).open(BET_AMOUNT);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0", "0.0", "-10.0"})
-    void abrirComValorNaoPositivoDeveRetornar400SemChamarOServico(String valor) throws Exception {
-        mockMvc.perform(post(ROTA)
+    void shouldRejectNonPositiveAmountWithoutCallingService(String value) throws Exception {
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":" + valor + "}"))
+                        .content("{\"valorAposta\":" + value + "}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
 
-        verifyNoInteractions(bauEncantadoService);
+        verifyNoInteractions(enchantedChestService);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"{}", "{\"valorAposta\":null}", "{\"valor\":null}"})
-    void abrirSemValorDeveRetornar400SemChamarOServico(String corpo) throws Exception {
-        mockMvc.perform(post(ROTA)
+    void shouldRejectMissingAmountWithoutCallingService(String body) throws Exception {
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(corpo))
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta é obrigatório"));
 
-        verifyNoInteractions(bauEncantadoService);
+        verifyNoInteractions(enchantedChestService);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0.001", "10.000", "1000000000000.00", "1e308"})
-    void abrirComValorForaDosLimitesDeveRetornar400SemChamarOServico(String valor) throws Exception {
-        mockMvc.perform(post(ROTA)
+    void shouldRejectOutOfRangeAmountWithoutCallingService(String value) throws Exception {
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":" + valor + "}"))
+                        .content("{\"valorAposta\":" + value + "}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(ChestBetValue.FORMATO_INVALIDO));
+                .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_FORMAT));
 
-        verifyNoInteractions(bauEncantadoService);
+        verifyNoInteractions(enchantedChestService);
     }
 
     @ParameterizedTest
@@ -105,22 +105,22 @@ class EnchantedChestControllerTest {
             "{\"valorAposta\":\"abc\"}", "{valorAposta:", "",
             "{\"valorAposta\":\"NaN\"}", "{\"valorAposta\":\"Infinity\"}", "{\"valorAposta\":NaN}"
     })
-    void abrirComCorpoIlegivelDeveRetornar400SemChamarOServico(String corpo) throws Exception {
-        mockMvc.perform(post(ROTA)
+    void shouldRejectUnreadableBodyWithoutCallingService(String body) throws Exception {
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(corpo))
+                        .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Valor inválido na requisição"));
 
-        verifyNoInteractions(bauEncantadoService);
+        verifyNoInteractions(enchantedChestService);
     }
 
     @Test
-    void abrirQuandoServicoRejeitarApostaDeveRetornar400ComMensagemDoServico() throws Exception {
-        when(bauEncantadoService.abrir(APOSTA))
+    void shouldReturnServiceMessageWhenBetIsRejected() throws Exception {
+        when(enchantedChestService.open(BET_AMOUNT))
                 .thenThrow(new InvalidBetException("O valor da aposta deve ser maior que zero"));
 
-        mockMvc.perform(post(ROTA)
+        mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"valorAposta\":10.0}"))
                 .andExpect(status().isBadRequest())

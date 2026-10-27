@@ -1,47 +1,54 @@
 package com.tavernasorte.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.BetType;
 
 public class DicePlayResponse {
 
-    private final int dado1;
-    private final int dado2;
-    private final int soma;
-    private final BetType tipoAposta;
-    private final boolean venceu;
-    private final double premio;
+    @JsonProperty("dado1")
+    private final int die1;
+    @JsonProperty("dado2")
+    private final int die2;
+    @JsonProperty("soma")
+    private final int sum;
+    @JsonProperty("tipoAposta")
+    private final BetType betType;
+    @JsonProperty("venceu")
+    private final boolean won;
+    @JsonProperty("premio")
+    private final double prize;
 
-    public DicePlayResponse(int dado1, int dado2, int soma, BetType tipoAposta,
-                            boolean venceu, double premio) {
-        this.dado1 = dado1;
-        this.dado2 = dado2;
-        this.soma = soma;
-        this.tipoAposta = tipoAposta;
-        this.venceu = venceu;
-        this.premio = premio;
+    public DicePlayResponse(int die1, int die2, int sum, BetType betType,
+                            boolean won, double prize) {
+        this.die1 = die1;
+        this.die2 = die2;
+        this.sum = sum;
+        this.betType = betType;
+        this.won = won;
+        this.prize = prize;
     }
 
-    public int getDado1() {
-        return dado1;
+    public int getDie1() {
+        return die1;
     }
 
-    public int getDado2() {
-        return dado2;
+    public int getDie2() {
+        return die2;
     }
 
-    public int getSoma() {
-        return soma;
+    public int getSum() {
+        return sum;
     }
 
-    public BetType getTipoAposta() {
-        return tipoAposta;
+    public BetType getBetType() {
+        return betType;
     }
 
-    public boolean isVenceu() {
-        return venceu;
+    public boolean isWon() {
+        return won;
     }
 
-    public double getPremio() {
-        return premio;
+    public double getPrize() {
+        return prize;
     }
 }

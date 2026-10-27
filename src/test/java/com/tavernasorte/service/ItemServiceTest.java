@@ -17,7 +17,7 @@ public class ItemServiceTest {
     private ItemRepository itemRepository;
 
     @Test
-    void itemExistePorBuscaIDTeste() {
+    void shouldFindExistingItemById() {
 
         ItemService itemService = new ItemService(itemRepository);
         Item item = new Item();
@@ -25,52 +25,52 @@ public class ItemServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        Item resultado = itemService.buscarPorId(1L);
-        assertNotNull(resultado);
+        Item result = itemService.findById(1L);
+        assertNotNull(result);
     }
 
     @Test
-    void buscarNomePorIDTeste() {
+    void shouldFindItemNameById() {
 
         ItemService itemService = new ItemService(itemRepository);
 
         Item item = new Item();
-        item.setNome("Poção");
+        item.setName("Poção");
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        Item resultado = itemService.buscarPorId(1L);
+        Item result = itemService.findById(1L);
 
-        assertEquals("Poção", resultado.getNome());
+        assertEquals("Poção", result.getName());
     }
 
     @Test
-    void buscarPrecoPorIdTeste() {
+    void shouldFindItemPriceById() {
 
         ItemService itemService = new ItemService(itemRepository);
 
         Item item = new Item();
-        item.setPreco(5);
+        item.setPrice(5);
 
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        Item resultado = itemService.buscarPorId(1L);
+        Item result = itemService.findById(1L);
 
-        assertEquals(5, resultado.getPreco());
+        assertEquals(5, result.getPrice());
     }
 
     @Test
-    void itemNaoExistePorBuscaIDTeste() {
+    void shouldReturnNullForMissingItem() {
 
         ItemService itemService = new ItemService(itemRepository);
 
         when(itemRepository.findById(999L))
                 .thenReturn(Optional.empty());
 
-        Item resultado = itemService.buscarPorId(999L);
+        Item result = itemService.findById(999L);
 
-        assertNull(resultado);
+        assertNull(result);
     }
 }

@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class EnchantedChestController {
 
-    private final EnchantedChestService bauEncantadoService;
+    private final EnchantedChestService enchantedChestService;
 
-    public EnchantedChestController(EnchantedChestService bauEncantadoService) {
-        this.bauEncantadoService = bauEncantadoService;
+    public EnchantedChestController(EnchantedChestService enchantedChestService) {
+        this.enchantedChestService = enchantedChestService;
     }
 
     @PostMapping("/bau/abrir")
-    public EnchantedChestResponse abrir(@Valid @RequestBody EnchantedChestRequest request) {
-        return bauEncantadoService.abrir(request.getValorAposta());
+    public EnchantedChestResponse open(@Valid @RequestBody EnchantedChestRequest request) {
+        return enchantedChestService.open(request.getBetAmount());
     }
 }

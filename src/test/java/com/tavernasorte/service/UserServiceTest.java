@@ -38,7 +38,7 @@ class UserServiceTest {
 
     @Test
 
-    void deveCriarUsuarioComSucesso() {
+    void shouldCreateUserSuccessfully() {
         String email = "luiz@example.com";
         String password = "senha123";
 
@@ -58,7 +58,7 @@ class UserServiceTest {
     }
 
     @Test
-    void naoDeveCriarUsuarioQuandoEmailJaEstiverEmUso() {
+    void shouldRejectUserCreationWhenEmailIsAlreadyInUse() {
         String email = "luiz@example.com";
 
         CreateUserRequest request =

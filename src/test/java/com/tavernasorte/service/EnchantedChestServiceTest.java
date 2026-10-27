@@ -28,92 +28,92 @@ import static org.mockito.Mockito.when;
 class EnchantedChestServiceTest {
 
     @Mock
-    private SymbolPicker sorteadorSymbol;
+    private SymbolPicker symbolPicker;
 
     private EnchantedChestService service;
 
     @BeforeEach
     void setUp() {
-        service = new EnchantedChestService(sorteadorSymbol);
+        service = new EnchantedChestService(symbolPicker);
     }
 
     @ParameterizedTest
-    @CsvSource({"MOEDA,30.00", "POCAO,50.00", "ESPADA,80.00", "COROA,120.00", "DRAGAO,200.00"})
-    void abrirComTresSymbolsIguaisDevePagarMultiplicadorDoSymbol(Symbol simbolo, String premioEsperado) {
-        when(sorteadorSymbol.sortear()).thenReturn(simbolo, simbolo, simbolo);
+    @CsvSource({"COIN,30.00", "POTION,50.00", "SWORD,80.00", "CROWN,120.00", "DRAGON,200.00"})
+    void shouldPaySymbolMultiplierForThreeMatchingSymbols(Symbol symbol, String expectedPrize) {
+        when(symbolPicker.pick()).thenReturn(symbol, symbol, symbol);
 
-        EnchantedChestResponse resultado = service.abrir(new BigDecimal("10.00"));
+        EnchantedChestResponse result = service.open(new BigDecimal("10.00"));
 
         assertAll("resultado do baú",
-                () -> assertEquals(List.of(simbolo, simbolo, simbolo), resultado.getSymbols()),
-                () -> assertEquals(new BigDecimal(premioEsperado), resultado.getPremio())
+                () -> assertEquals(List.of(symbol, symbol, symbol), result.getSymbols()),
+                () -> assertEquals(new BigDecimal(expectedPrize), result.getPrize())
         );
-        verify(sorteadorSymbol, times(3)).sortear();
+        verify(symbolPicker, times(3)).pick();
     }
 
     @Test
-    void abrirComUmParDeveDevolverAApostaComDuasCasasDecimais() {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.COROA, Symbol.COROA, Symbol.ESPADA);
+    void shouldReturnBetWithTwoDecimalPlacesForOnePair() {
+        when(symbolPicker.pick()).thenReturn(Symbol.CROWN, Symbol.CROWN, Symbol.SWORD);
 
-        EnchantedChestResponse resultado = service.abrir(new BigDecimal("10.0"));
+        EnchantedChestResponse result = service.open(new BigDecimal("10.0"));
 
-        assertEquals(new BigDecimal("10.00"), resultado.getPremio());
+        assertEquals(new BigDecimal("10.00"), result.getPrize());
     }
 
     @Test
-    void abrirComTresSymbolsDiferentesNaoDevePagarPremio() {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.MOEDA, Symbol.POCAO, Symbol.ESPADA);
+    void shouldPayNothingForThreeDifferentSymbols() {
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        EnchantedChestResponse resultado = service.abrir(new BigDecimal("10.00"));
+        EnchantedChestResponse result = service.open(new BigDecimal("10.00"));
 
-        assertEquals(new BigDecimal("0.00"), resultado.getPremio());
+        assertEquals(new BigDecimal("0.00"), result.getPrize());
     }
 
     @ParameterizedTest
     @CsvSource({"0.1,0.30", "0.01,0.03", "1,3.00", "1.0,3.00", "1.00,3.00"})
-    void abrirDeveCalcularPremioDecimalExato(String valor, String premioEsperado) {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.MOEDA);
+    void shouldCalculateExactDecimalPrize(String value, String expectedPrize) {
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
-        EnchantedChestResponse resultado = service.abrir(new BigDecimal(valor));
+        EnchantedChestResponse result = service.open(new BigDecimal(value));
 
-        assertEquals(new BigDecimal(premioEsperado), resultado.getPremio());
+        assertEquals(new BigDecimal(expectedPrize), result.getPrize());
     }
 
     @Test
-    void abrirNoLimiteDeveCalcularOPremioMaximoExatamente() {
-        when(sorteadorSymbol.sortear()).thenReturn(Symbol.DRAGAO);
+    void shouldCalculateExactMaximumPrize() {
+        when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
-        EnchantedChestResponse resultado = service.abrir(new BigDecimal("999999999999.99"));
+        EnchantedChestResponse result = service.open(new BigDecimal("999999999999.99"));
 
-        assertEquals(new BigDecimal("19999999999999.80"), resultado.getPremio());
+        assertEquals(new BigDecimal("19999999999999.80"), result.getPrize());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0", "-0.01", "-10"})
-    void abrirComValorNaoPositivoDeveRejeitarAntesDoSorteio(String valor) {
-        InvalidBetException excecao = assertThrows(InvalidBetException.class,
-                () -> service.abrir(new BigDecimal(valor)));
+    void shouldRejectNonPositiveAmountBeforePickingSymbols(String value) {
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(new BigDecimal(value)));
 
-        assertEquals("O valor da aposta deve ser maior que zero", excecao.getMessage());
-        verifyNoInteractions(sorteadorSymbol);
+        assertEquals("O valor da aposta deve ser maior que zero", exception.getMessage());
+        verifyNoInteractions(symbolPicker);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"0.001", "10.000", "999999999999.999", "1000000000000.00", "1e308"})
-    void abrirComValorForaDosLimitesDeveRejeitarAntesDoSorteio(String valor) {
-        InvalidBetException excecao = assertThrows(InvalidBetException.class,
-                () -> service.abrir(new BigDecimal(valor)));
+    void shouldRejectOutOfRangeAmountBeforePickingSymbols(String value) {
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(new BigDecimal(value)));
 
-        assertEquals(ChestBetValue.FORMATO_INVALIDO, excecao.getMessage());
-        verifyNoInteractions(sorteadorSymbol);
+        assertEquals(ChestBetValue.INVALID_FORMAT, exception.getMessage());
+        verifyNoInteractions(symbolPicker);
     }
 
     @Test
-    void abrirSemValorDeveRejeitarAntesDoSorteio() {
-        InvalidBetException excecao = assertThrows(InvalidBetException.class,
-                () -> service.abrir(null));
+    void shouldRejectMissingAmountBeforePickingSymbols() {
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(null));
 
-        assertEquals("O valor da aposta é obrigatório", excecao.getMessage());
-        verifyNoInteractions(sorteadorSymbol);
+        assertEquals("O valor da aposta é obrigatório", exception.getMessage());
+        verifyNoInteractions(symbolPicker);
     }
 }
