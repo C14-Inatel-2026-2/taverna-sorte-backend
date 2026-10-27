@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.DicePlayResponse;
-import com.tavernasorte.entity.BetType;
+import com.tavernasorte.model.BetType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

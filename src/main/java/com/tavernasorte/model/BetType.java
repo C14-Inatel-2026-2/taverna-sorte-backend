@@ -1,4 +1,4 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.model;
 
 public enum BetType {
     LOW,

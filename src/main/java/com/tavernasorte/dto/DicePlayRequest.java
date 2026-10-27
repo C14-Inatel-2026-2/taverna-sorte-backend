@@ -1,6 +1,6 @@
 package com.tavernasorte.dto;
 
-import com.tavernasorte.entity.BetType;
+import com.tavernasorte.model.BetType;
 import jakarta.validation.constraints.Positive;
 
 public class DicePlayRequest {

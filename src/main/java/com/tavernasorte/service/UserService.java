@@ -2,9 +2,9 @@ package com.tavernasorte.service;
 
 import com.tavernasorte.dto.CreateUserRequest;
 import com.tavernasorte.dto.CreateUserResponse;
-import com.tavernasorte.entity.User;
+import com.tavernasorte.database.entity.User;
 import com.tavernasorte.exception.EmailAlreadyInUseException;
-import com.tavernasorte.repository.UserRepository;
+import com.tavernasorte.database.repository.UserRepository;
 import java.util.Locale;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

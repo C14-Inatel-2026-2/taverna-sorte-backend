@@ -1,4 +1,4 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
 import java.util.ArrayList;
 import java.util.List;

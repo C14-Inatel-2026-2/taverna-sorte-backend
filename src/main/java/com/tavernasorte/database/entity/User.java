@@ -1,4 +1,4 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

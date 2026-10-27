@@ -1,4 +1,4 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
 public class Player {
 

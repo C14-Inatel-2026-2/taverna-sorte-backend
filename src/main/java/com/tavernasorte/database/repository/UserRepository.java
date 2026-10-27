@@ -1,6 +1,6 @@
-package com.tavernasorte.repository;
+package com.tavernasorte.database.repository;
 
-import com.tavernasorte.entity.User;
+import com.tavernasorte.database.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

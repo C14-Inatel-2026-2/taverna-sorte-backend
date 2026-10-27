@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
-import com.tavernasorte.entity.Item;
-import com.tavernasorte.repository.ItemRepository;
+import com.tavernasorte.database.entity.Item;
+import com.tavernasorte.database.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 
 @Service

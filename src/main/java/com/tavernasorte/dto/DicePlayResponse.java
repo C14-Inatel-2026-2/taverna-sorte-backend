@@ -1,6 +1,6 @@
 package com.tavernasorte.dto;
 
-import com.tavernasorte.entity.BetType;
+import com.tavernasorte.model.BetType;
 
 public class DicePlayResponse {
 

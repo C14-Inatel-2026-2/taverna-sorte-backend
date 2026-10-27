@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.DicePlayResponse;
-import com.tavernasorte.entity.BetType;
+import com.tavernasorte.model.BetType;
 import org.springframework.stereotype.Service;
 
 @Service
