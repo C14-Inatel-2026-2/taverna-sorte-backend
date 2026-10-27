@@ -1,26 +1,28 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
+import com.tavernasorte.entity.Inventory;
+import com.tavernasorte.entity.Item;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InventarioTest {
+public class InventoryTest {
 
     @Test
-    void limiteDoInventarioTeste(){
-        Inventario inventario = new Inventario();
+    void limiteDoInventoryTeste(){
+        Inventory inventario = new Inventory();
         assertEquals(3, inventario.getLimiteItens());
     }
 
     @Test
     void inventarioVazioTeste() {
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
         assertTrue(inventario.getItens().isEmpty());
     }
 
     @Test
     void adicionarItemTeste() {
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
         Item item = new Item();
 
         inventario.adicionarItem(item);
@@ -30,7 +32,7 @@ public class InventarioTest {
 
     @Test
     void limiteItensTeste() {
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
 
         inventario.adicionarItem(new Item());
         inventario.adicionarItem(new Item());
@@ -42,7 +44,7 @@ public class InventarioTest {
 
     @Test
     void adicionarItemNuloTeste() {
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
 
         inventario.adicionarItem(null);
 
@@ -51,7 +53,7 @@ public class InventarioTest {
 
     @Test
     void removerItemTeste() {
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
         Item item = new Item();
 
         inventario.adicionarItem(item);
@@ -62,7 +64,7 @@ public class InventarioTest {
 
     @Test
     void removerItemInexistenteTeste(){
-        Inventario inventario = new Inventario();
+        Inventory inventario = new Inventory();
         Item item = new Item();
         inventario.removerItem(item);
 

@@ -1,6 +1,6 @@
 package com.tavernasorte.model;
 
-public enum Simbolo {
+public enum Symbol {
     MOEDA(3),
     POCAO(5),
     ESPADA(8),
@@ -9,7 +9,7 @@ public enum Simbolo {
 
     private final int multiplicador;
 
-    Simbolo(int multiplicador) {
+    Symbol(int multiplicador) {
         this.multiplicador = multiplicador;
     }
 

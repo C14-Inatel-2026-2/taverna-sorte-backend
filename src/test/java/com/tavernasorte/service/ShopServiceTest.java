@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.entity.Item;
-import com.tavernasorte.entity.Jogador;
+import com.tavernasorte.entity.Player;
 import com.tavernasorte.repository.ItemRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,16 +13,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LojaServiceTest {
+class ShopServiceTest {
 
     @Mock
     private ItemRepository itemRepository;
-    private LojaService lojaService;
+    private ShopService lojaService;
 
     @Test
     void comprarItemTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -35,9 +35,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void saldoJogadorAposCompraTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerAposCompraTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -53,8 +53,8 @@ class LojaServiceTest {
 
     @Test
     void jogadorTemItemAposCompraTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -69,24 +69,24 @@ class LojaServiceTest {
     }
 
     @Test
-    void comprarItemJogadorNuloTeste() {
-        lojaService = new LojaService(itemRepository);
+    void comprarItemPlayerNuloTeste() {
+        lojaService = new ShopService(itemRepository);
 
         assertFalse(lojaService.comprarItem(null, 1L));
     }
 
     @Test
     void comprarItemIdNuloTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
 
         assertFalse(lojaService.comprarItem(jogador, null));
     }
 
     @Test
-    void saldoJogadorAposItemIdNuloTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerAposItemIdNuloTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         lojaService.comprarItem(jogador, null);
@@ -96,8 +96,8 @@ class LojaServiceTest {
 
     @Test
     void comprarItemInexistenteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         when(itemRepository.findById(99L))
@@ -107,9 +107,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void saldoJogadorAposItemInexistenteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerAposItemInexistenteTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         when(itemRepository.findById(99L))
@@ -121,9 +121,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void inventarioVazioJogadorAposCompraItemInexistenteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void inventarioVazioPlayerAposCompraItemInexistenteTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         when(itemRepository.findById(99L))
@@ -136,8 +136,8 @@ class LojaServiceTest {
 
     @Test
     void comprarItemSaldoInsuficienteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(20);
 
         Item item = new Item();
@@ -150,9 +150,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void saldoJogadorAposSaldoInsuficienteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerAposSaldoInsuficienteTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(20);
 
         Item item = new Item();
@@ -167,9 +167,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void inventarioVazioJogadorAposSaldoInsuficienteTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void inventarioVazioPlayerAposSaldoInsuficienteTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(20);
 
         Item item = new Item();
@@ -185,8 +185,8 @@ class LojaServiceTest {
 
     @Test
     void comprarItemInventarioCheioTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -203,9 +203,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void saldoJogadorAposCompraInventarioCheioTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerAposCompraInventarioCheioTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -224,9 +224,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void inventarioJogadorAposCompraInventarioCheioTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void inventarioPlayerAposCompraInventarioCheioTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
 
         Item item = new Item();
@@ -246,8 +246,8 @@ class LojaServiceTest {
 
     @Test
     void comprarItemComSaldoExatoTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(50);
 
         Item item = new Item();
@@ -260,9 +260,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void saldoJogadorCompraItemComSaldoExatoTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void saldoPlayerCompraItemComSaldoExatoTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(50);
 
         Item item = new Item();
@@ -277,9 +277,9 @@ class LojaServiceTest {
     }
 
     @Test
-    void inventarioJogadorCompraItemComSaldoExatoTeste() {
-        lojaService = new LojaService(itemRepository);
-        Jogador jogador = new Jogador();
+    void inventarioPlayerCompraItemComSaldoExatoTeste() {
+        lojaService = new ShopService(itemRepository);
+        Player jogador = new Player();
         jogador.adicionarSaldo(50);
 
         Item item = new Item();

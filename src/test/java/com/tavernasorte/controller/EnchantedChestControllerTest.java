@@ -1,11 +1,11 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.dto.BauEncantadoResponse;
-import com.tavernasorte.exception.ApostaInvalidaException;
+import com.tavernasorte.dto.EnchantedChestResponse;
+import com.tavernasorte.exception.InvalidBetException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
-import com.tavernasorte.model.Simbolo;
-import com.tavernasorte.model.ValorApostaBau;
-import com.tavernasorte.service.BauEncantadoService;
+import com.tavernasorte.model.Symbol;
+import com.tavernasorte.model.ChestBetValue;
+import com.tavernasorte.service.EnchantedChestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,19 +29,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class BauEncantadoControllerTest {
+class EnchantedChestControllerTest {
 
     private static final String ROTA = "/bau/abrir";
     private static final BigDecimal APOSTA = new BigDecimal("10.0");
 
     @Mock
-    private BauEncantadoService bauEncantadoService;
+    private EnchantedChestService bauEncantadoService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new BauEncantadoController(bauEncantadoService))
+        mockMvc = MockMvcBuilders.standaloneSetup(new EnchantedChestController(bauEncantadoService))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -49,8 +49,8 @@ class BauEncantadoControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {"valorAposta", "valor"})
     void abrirDeveAceitarONomeAtualEOAnteriorDoCampo(String campo) throws Exception {
-        BauEncantadoResponse resultado = new BauEncantadoResponse(
-                List.of(Simbolo.DRAGAO, Simbolo.DRAGAO, Simbolo.DRAGAO), new BigDecimal("200.00"));
+        EnchantedChestResponse resultado = new EnchantedChestResponse(
+                List.of(Symbol.DRAGAO, Symbol.DRAGAO, Symbol.DRAGAO), new BigDecimal("200.00"));
         when(bauEncantadoService.abrir(APOSTA)).thenReturn(resultado);
 
         mockMvc.perform(post(ROTA)
@@ -95,7 +95,7 @@ class BauEncantadoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"valorAposta\":" + valor + "}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(ValorApostaBau.FORMATO_INVALIDO));
+                .andExpect(jsonPath("$.error").value(ChestBetValue.FORMATO_INVALIDO));
 
         verifyNoInteractions(bauEncantadoService);
     }
@@ -118,7 +118,7 @@ class BauEncantadoControllerTest {
     @Test
     void abrirQuandoServicoRejeitarApostaDeveRetornar400ComMensagemDoServico() throws Exception {
         when(bauEncantadoService.abrir(APOSTA))
-                .thenThrow(new ApostaInvalidaException("O valor da aposta deve ser maior que zero"));
+                .thenThrow(new InvalidBetException("O valor da aposta deve ser maior que zero"));
 
         mockMvc.perform(post(ROTA)
                         .contentType(MediaType.APPLICATION_JSON)

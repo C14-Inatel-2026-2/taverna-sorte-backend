@@ -1,21 +1,21 @@
 package com.tavernasorte.entity;
 
-public class Jogador {
+public class Player {
 
     private int saldo;
-    private Inventario inventario;
+    private Inventory inventario;
     private String username;
 
-    public Jogador() {
+    public Player() {
         this.saldo = 0;
-        this.inventario = new Inventario();
+        this.inventario = new Inventory();
     }
 
     public int getSaldo() {
         return saldo;
     }
 
-    public Inventario getInventario() {
+    public Inventory getInventory() {
         return inventario;
     }
 

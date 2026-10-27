@@ -1,15 +1,15 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.service.RoletaService;
+import com.tavernasorte.service.RouletteService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class RoletaController {
+public class RouletteController {
 
-    private final RoletaService roletaService;
+    private final RouletteService roletaService;
 
-    public RoletaController(RoletaService roletaService) {
+    public RouletteController(RouletteService roletaService) {
         this.roletaService = roletaService;
     }
 

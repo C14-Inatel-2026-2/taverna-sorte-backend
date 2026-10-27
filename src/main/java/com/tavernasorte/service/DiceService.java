@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.DicePlayResponse;
-import com.tavernasorte.entity.TipoAposta;
+import com.tavernasorte.entity.BetType;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +13,7 @@ public class DiceService {
         this.diceRoller = diceRoller;
     }
 
-    public DicePlayResponse play(TipoAposta tipoAposta, double valorAposta) {
+    public DicePlayResponse play(BetType tipoAposta, double valorAposta) {
         if (tipoAposta == null) {
             throw new IllegalArgumentException("O tipo de aposta deve ser LOW, SEVEN ou HIGH");
         }
@@ -30,7 +30,7 @@ public class DiceService {
         return new DicePlayResponse(dado1, dado2, soma, tipoAposta, venceu, premio);
     }
 
-    private boolean venceu(TipoAposta tipoAposta, int soma) {
+    private boolean venceu(BetType tipoAposta, int soma) {
         return switch (tipoAposta) {
             case LOW -> soma >= 2 && soma <= 6;
             case SEVEN -> soma == 7;
@@ -38,10 +38,10 @@ public class DiceService {
         };
     }
 
-    private double calcularPremio(TipoAposta tipoAposta, double valorAposta, boolean venceu) {
+    private double calcularPremio(BetType tipoAposta, double valorAposta, boolean venceu) {
         if (!venceu) {
             return 0;
         }
-        return valorAposta * (tipoAposta == TipoAposta.SEVEN ? 4 : 2);
+        return valorAposta * (tipoAposta == BetType.SEVEN ? 4 : 2);
     }
 }

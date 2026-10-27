@@ -1,6 +1,6 @@
 package com.tavernasorte.entity;
 
-public enum TipoAposta {
+public enum BetType {
     LOW,
     SEVEN,
     HIGH

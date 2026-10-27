@@ -3,7 +3,7 @@ package com.tavernasorte.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Inventario {
+public class Inventory {
 
     private static final int LIMITE_ITENS = 3;
 

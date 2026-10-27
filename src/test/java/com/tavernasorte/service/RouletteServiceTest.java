@@ -14,12 +14,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RoletaServiceTest {
+class RouletteServiceTest {
 
     @Mock
     private Random random;
 
-    private final RoletaService roletaService = new RoletaService();
+    private final RouletteService roletaService = new RouletteService();
 
     @Test
     void girarSemMockDeveRetornarNumeroNoIntervaloDaRoleta() {
@@ -40,7 +40,7 @@ class RoletaServiceTest {
 
     @Test
     void girarComMockDeveConverterMaiorValorPossivelParaDez() {
-        RoletaService servicoComMock = new RoletaService(random);
+        RouletteService servicoComMock = new RouletteService(random);
         when(random.nextInt(10)).thenReturn(9);
 
         int resultado = servicoComMock.girar();
@@ -51,7 +51,7 @@ class RoletaServiceTest {
 
     @Test
     void girarComMockDevePropagarFalhaDoGerador() {
-        RoletaService servicoComMock = new RoletaService(random);
+        RouletteService servicoComMock = new RouletteService(random);
         when(random.nextInt(10)).thenThrow(new IllegalStateException("Falha no sorteio"));
 
         IllegalStateException erro = assertThrows(

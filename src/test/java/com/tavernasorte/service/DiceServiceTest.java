@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.DicePlayResponse;
-import com.tavernasorte.entity.TipoAposta;
+import com.tavernasorte.entity.BetType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,7 @@ class DiceServiceTest {
     void playComDadosDoisETresDeveRetornarSomaCinco() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.LOW, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
 
         assertEquals(5, resultado.getSoma());
     }
@@ -39,7 +39,7 @@ class DiceServiceTest {
     void playComApostaLowESomaCincoDeveVencer() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.LOW, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
 
         assertTrue(resultado.isVenceu());
     }
@@ -48,7 +48,7 @@ class DiceServiceTest {
     void playComApostaLowESomaCincoDevePagarODobro() {
         when(diceRoller.roll()).thenReturn(2, 3);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.LOW, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.LOW, 10.0);
 
         assertEquals(20.0, resultado.getPremio());
     }
@@ -57,7 +57,7 @@ class DiceServiceTest {
     void playComDadosTresEQuatroDeveRetornarSomaSete() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.SEVEN, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
 
         assertEquals(7, resultado.getSoma());
     }
@@ -66,7 +66,7 @@ class DiceServiceTest {
     void playComApostaSevenESomaSeteDeveVencer() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.SEVEN, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
 
         assertTrue(resultado.isVenceu());
     }
@@ -75,7 +75,7 @@ class DiceServiceTest {
     void playComApostaSevenESomaSeteDevePagarOQuadruplo() {
         when(diceRoller.roll()).thenReturn(3, 4);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.SEVEN, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.SEVEN, 10.0);
 
         assertEquals(40.0, resultado.getPremio());
     }
@@ -84,7 +84,7 @@ class DiceServiceTest {
     void playComDadosCincoECincoDeveRetornarSomaDez() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.HIGH, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
 
         assertEquals(10, resultado.getSoma());
     }
@@ -93,7 +93,7 @@ class DiceServiceTest {
     void playComApostaHighESomaDezDeveVencer() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.HIGH, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
 
         assertTrue(resultado.isVenceu());
     }
@@ -102,7 +102,7 @@ class DiceServiceTest {
     void playComApostaHighESomaDezDevePagarODobro() {
         when(diceRoller.roll()).thenReturn(5, 5);
 
-        DicePlayResponse resultado = diceService.play(TipoAposta.HIGH, 10.0);
+        DicePlayResponse resultado = diceService.play(BetType.HIGH, 10.0);
 
         assertEquals(20.0, resultado.getPremio());
     }
@@ -113,7 +113,7 @@ class DiceServiceTest {
         DiceService servicoSemMock = new DiceService(dadoFixo);
 
         assertThrows(IllegalArgumentException.class,
-                () -> servicoSemMock.play(TipoAposta.LOW, 0.0));
+                () -> servicoSemMock.play(BetType.LOW, 0.0));
     }
 
 
@@ -123,7 +123,7 @@ class DiceServiceTest {
         DiceService service = new DiceService(dadoFixo);
 
         DicePlayResponse resultado =
-                service.play(TipoAposta.LOW, 10.0);
+                service.play(BetType.LOW, 10.0);
 
         assertEquals(0.0, resultado.getPremio());
     }

@@ -1,10 +1,10 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.exception.GlobalExceptionHandler;
-import com.tavernasorte.model.Simbolo;
-import com.tavernasorte.model.ValorApostaBau;
-import com.tavernasorte.service.BauEncantadoService;
-import com.tavernasorte.service.SorteadorSimbolo;
+import com.tavernasorte.model.Symbol;
+import com.tavernasorte.model.ChestBetValue;
+import com.tavernasorte.service.EnchantedChestService;
+import com.tavernasorte.service.SymbolPicker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,17 +28,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-class BauEncantadoFluxoTest {
+class EnchantedChestFlowTest {
 
     @Mock
-    private SorteadorSimbolo sorteadorSimbolo;
+    private SymbolPicker sorteadorSymbol;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        BauEncantadoService service = new BauEncantadoService(sorteadorSimbolo);
-        mockMvc = MockMvcBuilders.standaloneSetup(new BauEncantadoController(service))
+        EnchantedChestService service = new EnchantedChestService(sorteadorSymbol);
+        mockMvc = MockMvcBuilders.standaloneSetup(new EnchantedChestController(service))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
@@ -46,7 +46,7 @@ class BauEncantadoFluxoTest {
     @ParameterizedTest
     @ValueSource(strings = {"valorAposta", "valor"})
     void fluxoCompletoDevePagarDecimalExatoComAmbosOsNomesDoCampo(String campo) throws Exception {
-        when(sorteadorSimbolo.sortear()).thenReturn(Simbolo.MOEDA);
+        when(sorteadorSymbol.sortear()).thenReturn(Symbol.MOEDA);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -56,7 +56,7 @@ class BauEncantadoFluxoTest {
                 .andExpect(jsonPath("$.premio").isNumber())
                 .andExpect(jsonPath("$.premio").value(0.3));
 
-        verify(sorteadorSimbolo, times(3)).sortear();
+        verify(sorteadorSymbol, times(3)).sortear();
     }
 
     @ParameterizedTest
@@ -66,14 +66,14 @@ class BauEncantadoFluxoTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"" + campo + "\":1e308}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(ValorApostaBau.FORMATO_INVALIDO));
+                .andExpect(jsonPath("$.error").value(ChestBetValue.FORMATO_INVALIDO));
 
-        verifyNoInteractions(sorteadorSimbolo);
+        verifyNoInteractions(sorteadorSymbol);
     }
 
     @Test
     void maiorApostaPermitidaDeveRetornarPremioExatoComoNumeroJson() throws Exception {
-        when(sorteadorSimbolo.sortear()).thenReturn(Simbolo.DRAGAO);
+        when(sorteadorSymbol.sortear()).thenReturn(Symbol.DRAGAO);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)

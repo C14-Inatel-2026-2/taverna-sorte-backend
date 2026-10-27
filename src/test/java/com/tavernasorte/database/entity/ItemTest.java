@@ -1,5 +1,6 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
+import com.tavernasorte.entity.Item;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

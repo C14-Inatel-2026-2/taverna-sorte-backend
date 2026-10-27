@@ -3,14 +3,14 @@ package com.tavernasorte.dto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class UserResponse {
+public class CreateUserResponse {
 
     private final UUID id;
     private final String name;
     private final String email;
     private final LocalDateTime createdAt;
 
-    public UserResponse(UUID id, String name, String email, LocalDateTime createdAt) {
+    public CreateUserResponse(UUID id, String name, String email, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;

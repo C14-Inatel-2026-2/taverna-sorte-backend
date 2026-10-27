@@ -1,14 +1,12 @@
 package com.tavernasorte.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.tavernasorte.entity.TipoAposta;
-import jakarta.validation.constraints.NotNull;
+import com.tavernasorte.entity.BetType;
 import jakarta.validation.constraints.Positive;
 
 public class DicePlayRequest {
 
 
-    private TipoAposta tipoAposta;
+    private BetType tipoAposta;
 
     @Positive(message = "O valor da aposta deve ser maior que zero")
     private double valorAposta;
@@ -16,16 +14,16 @@ public class DicePlayRequest {
     public DicePlayRequest() {
     }
 
-    public DicePlayRequest(TipoAposta tipoAposta, double valorAposta) {
+    public DicePlayRequest(BetType tipoAposta, double valorAposta) {
         this.tipoAposta = tipoAposta;
         this.valorAposta = valorAposta;
     }
 
-    public TipoAposta getTipoAposta() {
+    public BetType getTipoAposta() {
         return tipoAposta;
     }
 
-    public void setTipoAposta(TipoAposta tipoAposta) {
+    public void setTipoAposta(BetType tipoAposta) {
         this.tipoAposta = tipoAposta;
     }
 

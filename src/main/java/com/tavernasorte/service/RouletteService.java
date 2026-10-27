@@ -5,15 +5,15 @@ import org.springframework.stereotype.Service;
 import java.util.Random;
 
 @Service
-public class RoletaService {
+public class RouletteService {
 
     private final Random random;
 
-    public RoletaService() {
+    public RouletteService() {
         this(new Random());
     }
 
-    RoletaService(Random random) {
+    RouletteService(Random random) {
         this.random = random;
     }
 

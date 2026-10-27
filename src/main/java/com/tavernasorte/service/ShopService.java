@@ -1,20 +1,20 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.entity.Item;
-import com.tavernasorte.entity.Jogador;
+import com.tavernasorte.entity.Player;
 import com.tavernasorte.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LojaService {
+public class ShopService {
 
     private final ItemRepository itemRepository;
 
-    public LojaService(ItemRepository itemRepository) {
+    public ShopService(ItemRepository itemRepository) {
         this.itemRepository = itemRepository;
     }
 
-    public boolean comprarItem(Jogador jogador, Long itemId) {
+    public boolean comprarItem(Player jogador, Long itemId) {
 
         if (jogador == null || itemId == null) {
             return false;
@@ -30,8 +30,8 @@ public class LojaService {
             return false;
         }
 
-        if (jogador.getInventario().getItens().size()
-                >= jogador.getInventario().getLimiteItens()) {
+        if (jogador.getInventory().getItens().size()
+                >= jogador.getInventory().getLimiteItens()) {
             return false;
         }
 
@@ -39,7 +39,7 @@ public class LojaService {
             return false;
         }
 
-        jogador.getInventario().adicionarItem(item);
+        jogador.getInventory().adicionarItem(item);
 
         return true;
     }

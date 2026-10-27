@@ -1,7 +1,7 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.dto.CreateUserRequest;
-import com.tavernasorte.dto.UserResponse;
+import com.tavernasorte.dto.CreateUserResponse;
 import com.tavernasorte.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        UserResponse user = userService.create(request);
+    public ResponseEntity<CreateUserResponse> create(@Valid @RequestBody CreateUserRequest request) {
+        CreateUserResponse user = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
 
     }

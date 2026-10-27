@@ -1,26 +1,28 @@
-package com.tavernasorte.entity;
+package com.tavernasorte.database.entity;
 
+import com.tavernasorte.entity.Item;
+import com.tavernasorte.entity.Player;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JogadorTest {
+public class PlayerTest {
 
     @Test
-    void saldoJogadorNovoTeste() {
-        Jogador jogador = new Jogador();
+    void saldoPlayerNovoTeste() {
+        Player jogador = new Player();
         assertEquals(0, jogador.getSaldo());
     }
 
     @Test
-    void inventarioVazioJogadorNovoTeste() {
-        Jogador jogador = new Jogador();
-        assertTrue(jogador.getInventario().getItens().isEmpty());
+    void inventarioVazioPlayerNovoTeste() {
+        Player jogador = new Player();
+        assertTrue(jogador.getInventory().getItens().isEmpty());
     }
 
     @Test
     void adicionarSaldoTeste() {
-        Jogador jogador = new Jogador();
+        Player jogador = new Player();
 
         jogador.adicionarSaldo(100);
 
@@ -29,7 +31,7 @@ public class JogadorTest {
 
     @Test
     void adicionarSaldoNegativoTeste() {
-        Jogador jogador = new Jogador();
+        Player jogador = new Player();
 
         jogador.adicionarSaldo(-50);
 
@@ -38,7 +40,7 @@ public class JogadorTest {
 
     @Test
     void debitarSaldoTeste() {
-        Jogador jogador = new Jogador();
+        Player jogador = new Player();
         jogador.adicionarSaldo(100);
         jogador.debitar(30);
 
@@ -47,7 +49,7 @@ public class JogadorTest {
 
     @Test
     void debitarSaldoInsuficienteTeste() {
-        Jogador jogador = new Jogador();
+        Player jogador = new Player();
         jogador.adicionarSaldo(20);
         jogador.debitar(30);
 
@@ -55,12 +57,12 @@ public class JogadorTest {
     }
 
     @Test
-    void jogadorPossuiItemNoInventarioTeste() {
-        Jogador jogador = new Jogador();
+    void jogadorPossuiItemNoInventoryTeste() {
+        Player jogador = new Player();
         Item item = new Item();
 
-        jogador.getInventario().adicionarItem(item);
+        jogador.getInventory().adicionarItem(item);
 
-        assertTrue(jogador.getInventario().getItens().contains(item));
+        assertTrue(jogador.getInventory().getItens().contains(item));
     }
 }
