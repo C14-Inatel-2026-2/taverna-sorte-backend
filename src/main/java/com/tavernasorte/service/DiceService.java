@@ -1,7 +1,7 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.DicePlayResponse;
-import com.tavernasorte.entity.TipoAposta;
+import com.tavernasorte.model.BetType;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,35 +13,35 @@ public class DiceService {
         this.diceRoller = diceRoller;
     }
 
-    public DicePlayResponse play(TipoAposta tipoAposta, double valorAposta) {
-        if (tipoAposta == null) {
+    public DicePlayResponse play(BetType betType, double betAmount) {
+        if (betType == null) {
             throw new IllegalArgumentException("O tipo de aposta deve ser LOW, SEVEN ou HIGH");
         }
-        if (!Double.isFinite(valorAposta) || valorAposta <= 0) {
+        if (!Double.isFinite(betAmount) || betAmount <= 0) {
             throw new IllegalArgumentException("O valor da aposta deve ser maior que zero e finito");
         }
 
-        int dado1 = diceRoller.roll();
-        int dado2 = diceRoller.roll();
-        int soma = dado1 + dado2;
-        boolean venceu = venceu(tipoAposta, soma);
-        double premio = calcularPremio(tipoAposta, valorAposta, venceu);
+        int die1 = diceRoller.roll();
+        int die2 = diceRoller.roll();
+        int sum = die1 + die2;
+        boolean won = isWinningBet(betType, sum);
+        double prize = calculatePrize(betType, betAmount, won);
 
-        return new DicePlayResponse(dado1, dado2, soma, tipoAposta, venceu, premio);
+        return new DicePlayResponse(die1, die2, sum, betType, won, prize);
     }
 
-    private boolean venceu(TipoAposta tipoAposta, int soma) {
-        return switch (tipoAposta) {
-            case LOW -> soma >= 2 && soma <= 6;
-            case SEVEN -> soma == 7;
-            case HIGH -> soma >= 8 && soma <= 12;
+    private boolean isWinningBet(BetType betType, int sum) {
+        return switch (betType) {
+            case LOW -> sum >= 2 && sum <= 6;
+            case SEVEN -> sum == 7;
+            case HIGH -> sum >= 8 && sum <= 12;
         };
     }
 
-    private double calcularPremio(TipoAposta tipoAposta, double valorAposta, boolean venceu) {
-        if (!venceu) {
+    private double calculatePrize(BetType betType, double betAmount, boolean won) {
+        if (!won) {
             return 0;
         }
-        return valorAposta * (tipoAposta == TipoAposta.SEVEN ? 4 : 2);
+        return betAmount * (betType == BetType.SEVEN ? 4 : 2);
     }
 }

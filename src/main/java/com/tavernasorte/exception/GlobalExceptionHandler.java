@@ -23,9 +23,9 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(ApostaInvalidaException.class)
-    public ResponseEntity<Map<String, String>> handleApostaInvalida(
-            ApostaInvalidaException exception
+    @ExceptionHandler(InvalidBetException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidBet(
+            InvalidBetException exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
