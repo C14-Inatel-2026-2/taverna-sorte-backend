@@ -8,8 +8,6 @@ import com.tavernasorte.service.SymbolPicker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
@@ -43,14 +41,15 @@ class EnchantedChestFlowTest {
                 .build();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"valorAposta", "valor"})
-    void shouldPayExactDecimalPrizeWithEitherFieldName(String field) throws Exception {
+    @Test
+    void shouldPayExactDecimalPrize() throws Exception {
         when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + field + "\":0.1}"))
+                        .content("""
+                                {"valorAposta":0.1}
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("MOEDA", "MOEDA", "MOEDA")))
                 .andExpect(jsonPath("$.premio").isNumber())
@@ -59,12 +58,13 @@ class EnchantedChestFlowTest {
         verify(symbolPicker, times(3)).pick();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"valorAposta", "valor"})
-    void shouldRejectOverflowingBetBeforePickingSymbols(String field) throws Exception {
+    @Test
+    void shouldRejectOverflowingBetBeforePickingSymbols() throws Exception {
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + field + "\":1e308}"))
+                        .content("""
+                                {"valorAposta":1e308}
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_FORMAT));
 
@@ -77,7 +77,9 @@ class EnchantedChestFlowTest {
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":10000.00}"))
+                        .content("""
+                                {"valorAposta":10000.00}
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.premio").isNumber())
                 .andExpect(content().string(containsString("\"premio\":200000.00")));
@@ -87,7 +89,9 @@ class EnchantedChestFlowTest {
     void shouldRejectBetAboveMaximumBeforePickingSymbols() throws Exception {
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":10000.01}"))
+                        .content("""
+                                {"valorAposta":10000.01}
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_MAXIMUM_VALUE));
 

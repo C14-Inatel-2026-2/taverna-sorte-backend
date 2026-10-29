@@ -157,15 +157,16 @@ A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos
 `simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par
 devolve a aposta e três símbolos diferentes não pagam prêmio.
 
-A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de
-`@JsonAlias`. Envie apenas um dos nomes em cada requisição.
-
 Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
 `ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até
 5 dígitos inteiros e 2 casas decimais, e no máximo `10000.00`.
 Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
 silencioso. Valores aceitos são normalizados para duas casas decimais,
 e o prêmio continua sendo um número no JSON.
+
+O corpo da requisição é estrito: o único campo aceito é `valorAposta`, e
+qualquer outro campo (inclusive o antigo `valor`) rejeita a requisição.
+Isso vale só para o baú; os demais endpoints não foram alterados.
 
 A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`,
 `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo
@@ -177,7 +178,7 @@ formato usado em usuários (`{"error": "..."}`):
 | `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
 | Mais de 2 casas decimais ou mais de 5 dígitos inteiros | 400 | A aposta deve ter no máximo 5 dígitos inteiros e 2 casas decimais |
 | Acima de `10000.00` (ex.: `10000.01`) | 400 | O valor máximo da aposta é 10000.00 |
-| `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
+| `{"valorAposta": "abc"}`, JSON malformado ou campo desconhecido (ex.: `{"valor": 10.0}`) | 400 | Valor inválido na requisição |
 
 O `EnchantedChestService` também valida o valor por meio de `ChestBetValue`
 antes de sortear e lança `InvalidBetException`, pois pode ser chamado sem

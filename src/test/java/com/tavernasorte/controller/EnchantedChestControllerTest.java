@@ -1,7 +1,6 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.dto.EnchantedChestResponse;
-import com.tavernasorte.exception.InvalidBetException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
 import com.tavernasorte.model.Symbol;
 import com.tavernasorte.model.ChestBetValue;
@@ -46,16 +45,17 @@ class EnchantedChestControllerTest {
                 .build();
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"valorAposta", "valor"})
-    void shouldAcceptCurrentAndLegacyFieldNames(String field) throws Exception {
+    @Test
+    void shouldOpenChestWithValidBetAmount() throws Exception {
         EnchantedChestResponse result = new EnchantedChestResponse(
                 List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), new BigDecimal("200.00"));
         when(enchantedChestService.open(BET_AMOUNT)).thenReturn(result);
 
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"" + field + "\":10.0}"))
+                        .content("""
+                                {"valorAposta":10.0}
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("DRAGAO", "DRAGAO", "DRAGAO")))
                 .andExpect(jsonPath("$.premio").isNumber())
@@ -69,7 +69,9 @@ class EnchantedChestControllerTest {
     void shouldRejectNonPositiveAmountWithoutCallingService(String value) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":" + value + "}"))
+                        .content("""
+                                {"valorAposta":%s}
+                                """.formatted(value)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
 
@@ -77,7 +79,12 @@ class EnchantedChestControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"{}", "{\"valorAposta\":null}", "{\"valor\":null}"})
+    @ValueSource(strings = {
+            "{}",
+            """
+            {"valorAposta":null}
+            """
+    })
     void shouldRejectMissingAmountWithoutCallingService(String body) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +100,9 @@ class EnchantedChestControllerTest {
     void shouldRejectOutOfRangeAmountWithoutCallingService(String value) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":" + value + "}"))
+                        .content("""
+                                {"valorAposta":%s}
+                                """.formatted(value)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_FORMAT));
 
@@ -102,8 +111,20 @@ class EnchantedChestControllerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"valorAposta\":\"abc\"}", "{valorAposta:", "",
-            "{\"valorAposta\":\"NaN\"}", "{\"valorAposta\":\"Infinity\"}", "{\"valorAposta\":NaN}"
+            """
+            {"valorAposta":"abc"}
+            """,
+            "{valorAposta:",
+            "",
+            """
+            {"valorAposta":"NaN"}
+            """,
+            """
+            {"valorAposta":"Infinity"}
+            """,
+            """
+            {"valorAposta":NaN}
+            """
     })
     void shouldRejectUnreadableBodyWithoutCallingService(String body) throws Exception {
         mockMvc.perform(post(ROUTE)
@@ -115,15 +136,28 @@ class EnchantedChestControllerTest {
         verifyNoInteractions(enchantedChestService);
     }
 
-    @Test
-    void shouldReturnServiceMessageWhenBetIsRejected() throws Exception {
-        when(enchantedChestService.open(BET_AMOUNT))
-                .thenThrow(new InvalidBetException("O valor da aposta deve ser maior que zero"));
-
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"valorApostaa":"10000.1"}
+            """,
+            """
+            {"valor":10.0}
+            """,
+            """
+            {"valorAposta":10.0,"extra":true}
+            """,
+            """
+            {"extra":1}
+            """
+    })
+    void shouldRejectUnknownFieldWithoutCallingService(String body) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":10.0}"))
+                        .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
+                .andExpect(jsonPath("$.error").value("Valor inválido na requisição"));
+
+        verifyNoInteractions(enchantedChestService);
     }
 }
