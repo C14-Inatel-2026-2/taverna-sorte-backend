@@ -89,7 +89,7 @@ class EnchantedChestControllerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0.001", "10.000", "1000000000000.00", "1e308"})
+    @ValueSource(strings = {"0.001", "10.000", "100000.00", "1000000000000.00", "1e308"})
     void shouldRejectOutOfRangeAmountWithoutCallingService(String value) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)

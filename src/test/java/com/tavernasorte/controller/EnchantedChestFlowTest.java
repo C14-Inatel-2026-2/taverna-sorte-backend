@@ -77,9 +77,20 @@ class EnchantedChestFlowTest {
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"valorAposta\":999999999999.99}"))
+                        .content("{\"valorAposta\":10000.00}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.premio").isNumber())
-                .andExpect(content().string(containsString("\"premio\":19999999999999.80")));
+                .andExpect(content().string(containsString("\"premio\":200000.00")));
+    }
+
+    @Test
+    void shouldRejectBetAboveMaximumBeforePickingSymbols() throws Exception {
+        mockMvc.perform(post("/bau/abrir")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"valorAposta\":10000.01}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_MAXIMUM_VALUE));
+
+        verifyNoInteractions(symbolPicker);
     }
 }

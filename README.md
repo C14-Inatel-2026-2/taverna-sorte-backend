@@ -162,8 +162,7 @@ A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de
 
 Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
 `ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até
-12 dígitos inteiros e 2 casas decimais. O limite técnico é
-`999999999999.99`; ele não define o balanceamento econômico dos jogos.
+5 dígitos inteiros e 2 casas decimais, e no máximo `10000.00`.
 Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
 silencioso. Valores aceitos são normalizados para duas casas decimais,
 e o prêmio continua sendo um número no JSON.
@@ -176,7 +175,8 @@ formato usado em usuários (`{"error": "..."}`):
 | --- | --- | --- |
 | `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
 | `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
-| Mais de 2 casas decimais ou mais de 12 dígitos inteiros | 400 | A aposta deve ter no máximo 12 dígitos inteiros e 2 casas decimais |
+| Mais de 2 casas decimais ou mais de 5 dígitos inteiros | 400 | A aposta deve ter no máximo 5 dígitos inteiros e 2 casas decimais |
+| Acima de `10000.00` (ex.: `10000.01`) | 400 | O valor máximo da aposta é 10000.00 |
 | `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
 
 O `EnchantedChestService` também valida o valor por meio de `ChestBetValue`
