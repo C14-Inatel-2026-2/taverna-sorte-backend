@@ -6,37 +6,72 @@ Backend do projeto Taverna da Sorte desenvolvido em Java com Spring Boot.
 
 ## Funcionalidades e Requisitos
 
-Esta seção apresenta as funcionalidades previstas para o sistema e os requisitos que orientam seu desenvolvimento. Funcionalidades ainda não implementadas são identificadas como planejadas.
+Esta seção apresenta as funcionalidades do sistema e os requisitos que orientam seu desenvolvimento. Funcionalidades ainda não concluídas são identificadas como em desenvolvimento.
 
 ### Requisitos Funcionais
 
-- **RF01 – Autenticação de usuários:** permitir que usuários cadastrados realizem login para acessar o sistema.
-- **RF02 – Navegação:** permitir a navegação entre as telas e funcionalidades do aplicativo.
-- **RF03 – Compra de itens:** permitir que jogadores comprem itens na loja utilizando suas moedas, respeitando o saldo disponível e o limite do inventário.
-- **RF04 – Baú Encantado:** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de símbolos sorteadas.
-- **RF05 – Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
-- **RF06 – Histórico de partidas (planejado):** permitir que jogadores consultem suas partidas anteriores, incluindo o jogo realizado, valor apostado, resultado, prêmio recebido e data.
+- **RF01 – Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
+- **RF02 – Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
+- **RF03 – Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
+- **RF04 – Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF05 – Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
 
-#### Detalhamento do histórico de partidas
+#### Detalhamento das funcionalidades
+
+**Autenticação de usuários**
+
+- Permitir login utilizando e-mail e senha.
+- Validar as senhas utilizando BCrypt.
+- Gerar um token JWT após autenticação bem-sucedida.
+- Rejeitar credenciais inválidas sem revelar se o e-mail ou a senha estão incorretos.
+- Definir validade e assinatura verificável para os tokens.
+- Proteger rotas que exigem autenticação, rejeitando tokens ausentes, inválidos ou expirados.
+- Não expor senhas ou seus hashes nas respostas da API.
+
+**Compra de itens na loja**
+
+- Permitir a compra de itens utilizando o saldo de moedas do jogador.
+- Descontar o preço do item do saldo após uma compra bem-sucedida.
+- Adicionar o item adquirido ao inventário.
+- Permitir compras quando o saldo for exatamente igual ao preço do item.
+- Recusar compras quando o jogador não possuir saldo suficiente.
+- Impedir compras quando o inventário estiver cheio, respeitando o limite de 3 itens.
+- Recusar compras de itens inexistentes.
+- Garantir que compras recusadas não alterem o saldo nem o inventário.
+
+**Baú Encantado**
+
+- Receber o valor da aposta do jogador.
+- Sortear exatamente três símbolos.
+- Calcular o prêmio conforme a combinação sorteada:
+  - Três símbolos iguais: prêmio correspondente ao valor da aposta multiplicado pelo multiplicador do símbolo.
+  - Exatamente dois símbolos iguais: devolução do valor apostado.
+  - Três símbolos diferentes: nenhum prêmio.
+- Rejeitar apostas ausentes, nulas, iguais a zero, negativas, superiores a R$ 10.000,00 ou com mais de duas casas decimais.
+
+**Histórico de partidas**
 
 O sistema deverá:
 
 - Registrar automaticamente cada partida concluída.
-- Armazenar o tipo de jogo, valor apostado, resultado, prêmio recebido e data da partida.
-- Permitir que o jogador consulte seu próprio histórico.
+- Armazenar o jogador, o tipo de jogo, o valor apostado, o resultado, o prêmio recebido e a data da partida.
+- Permitir que o jogador consulte somente seu próprio histórico.
+- Exigir autenticação válida para realizar a consulta.
 - Exibir as partidas da mais recente para a mais antiga.
-- Impedir que um jogador consulte o histórico de outros usuários.
 - Informar quando não houver partidas registradas.
+- Manter os registros armazenados mesmo após o encerramento da sessão.
 
 ### Requisitos Não Funcionais
 
 - **RNF01 – Arquitetura:** organizar o backend em camadas, separando responsabilidades entre controllers, services, repositories, entities e DTOs.
 - **RNF02 – Persistência:** utilizar MySQL para armazenar os dados da aplicação.
-- **RNF03 – Segurança:** proteger informações confidenciais, evitando a exposição de senhas e credenciais.
+- **RNF03 – Segurança:** utilizar BCrypt para proteção de senhas e JWT para autenticação e proteção de rotas.
 - **RNF04 – Validação:** validar os dados recebidos pela API e retornar respostas HTTP adequadas em caso de erros.
-- **RNF05 – Testabilidade:** utilizar testes automatizados para verificar o comportamento dos serviços e endpoints.
-- **RNF06 – Integração contínua:** utilizar Jenkins para executar o processo de build e os testes automatizados.
-- **RNF07 – Implantação:** disponibilizar a aplicação em ambiente de produção por meio do Render.
+- **RNF05 – Privacidade:** restringir o acesso aos dados de cada jogador, impedindo consultas não autorizadas ao histórico de outros usuários.
+- **RNF06 – Integridade:** preservar os registros das partidas concluídas e garantir a consistência das operações de compra.
+- **RNF07 – Testabilidade:** utilizar testes automatizados para verificar o comportamento dos serviços e endpoints.
+- **RNF08 – Integração contínua:** utilizar Jenkins para executar o processo de build e os testes automatizados.
+- **RNF09 – Implantação:** disponibilizar a aplicação em ambiente de produção por meio do Render.
 
 ---
 
@@ -191,20 +226,23 @@ A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos `sim
 
 A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de `@JsonAlias`. Envie apenas um dos nomes em cada requisição.
 
-Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo. `ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até 12 dígitos inteiros e 2 casas decimais. O limite técnico é `999999999999.99`; ele não define o balanceamento econômico dos jogos.
+Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo. `ChestBetValue` centraliza as regras de validação: valor obrigatório, positivo e com até duas casas decimais.
 
-Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento silencioso. Valores aceitos são normalizados para duas casas decimais, e o prêmio continua sendo um número no JSON.
+**Limite funcional da aposta:** conforme o critério de aceite da história C14-20, o valor máximo permitido deve ser R$ 10.000,00. A implementação também deve rejeitar valores com mais de duas casas decimais, sem arredondamento silencioso.
+
+Entradas com mais de duas casas decimais devem ser rejeitadas. Valores aceitos são normalizados para duas casas decimais, e o prêmio continua sendo um número no JSON.
 
 A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`):
 
-| Requisição | Status | `error` |
-| --- | --- | --- |
+| Requisição | Status | Resultado esperado |
+|---|---|---|
 | `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
 | `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
-| Mais de 2 casas decimais ou mais de 12 dígitos inteiros | 400 | A aposta deve ter no máximo 12 dígitos inteiros e 2 casas decimais |
+| `{"valorAposta": 10000.01}` | 400 | A aposta não pode ultrapassar R$ 10.000,00 |
+| Mais de 2 casas decimais | 400 | A aposta deve ter no máximo 2 casas decimais |
 | `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
 
-O `EnchantedChestService` também valida o valor por meio de `ChestBetValue` antes de sortear e lança `InvalidBetException`, pois pode ser chamado sem passar pelo controller. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
+O `EnchantedChestService` também deve validar o valor por meio de `ChestBetValue` antes de sortear e lançar `InvalidBetException`, pois pode ser chamado sem passar pelo controller. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
 
 Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm a implementação da `main`, incluindo seus pacotes e contratos.
 
@@ -213,3 +251,4 @@ Para executar a suíte com Java 21 e Maven:
 ```shell
 mvn clean test
 ```
+
