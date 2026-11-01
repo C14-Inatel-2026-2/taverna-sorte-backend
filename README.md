@@ -4,6 +4,42 @@ Backend do projeto Taverna da Sorte desenvolvido em Java com Spring Boot.
 
 ---
 
+## Funcionalidades e Requisitos
+
+Esta seção apresenta as funcionalidades previstas para o sistema e os requisitos que orientam seu desenvolvimento. Funcionalidades ainda não implementadas são identificadas como planejadas.
+
+### Requisitos Funcionais
+
+- **RF01 – Autenticação de usuários:** permitir que usuários cadastrados realizem login para acessar o sistema.
+- **RF02 – Navegação:** permitir a navegação entre as telas e funcionalidades do aplicativo.
+- **RF03 – Compra de itens:** permitir que jogadores comprem itens na loja utilizando suas moedas, respeitando o saldo disponível e o limite do inventário.
+- **RF04 – Baú Encantado:** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de símbolos sorteadas.
+- **RF05 – Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF06 – Histórico de partidas (planejado):** permitir que jogadores consultem suas partidas anteriores, incluindo o jogo realizado, valor apostado, resultado, prêmio recebido e data.
+
+#### Detalhamento do histórico de partidas
+
+O sistema deverá:
+
+- Registrar automaticamente cada partida concluída.
+- Armazenar o tipo de jogo, valor apostado, resultado, prêmio recebido e data da partida.
+- Permitir que o jogador consulte seu próprio histórico.
+- Exibir as partidas da mais recente para a mais antiga.
+- Impedir que um jogador consulte o histórico de outros usuários.
+- Informar quando não houver partidas registradas.
+
+### Requisitos Não Funcionais
+
+- **RNF01 – Arquitetura:** organizar o backend em camadas, separando responsabilidades entre controllers, services, repositories, entities e DTOs.
+- **RNF02 – Persistência:** utilizar MySQL para armazenar os dados da aplicação.
+- **RNF03 – Segurança:** proteger informações confidenciais, evitando a exposição de senhas e credenciais.
+- **RNF04 – Validação:** validar os dados recebidos pela API e retornar respostas HTTP adequadas em caso de erros.
+- **RNF05 – Testabilidade:** utilizar testes automatizados para verificar o comportamento dos serviços e endpoints.
+- **RNF06 – Integração contínua:** utilizar Jenkins para executar o processo de build e os testes automatizados.
+- **RNF07 – Implantação:** disponibilizar a aplicação em ambiente de produção por meio do Render.
+
+---
+
 ## Executar a pipeline no Jenkins
 
 ### Pré-requisitos
@@ -38,7 +74,7 @@ docker compose up -d --build jenkins
 docker compose logs -f jenkins
 ```
 
-Aguarde a mensagem `Jenkins is fully up and running`. Pressione `Ctrl+C` para sair dos logs; o Jenkins continuará ativo. O MySQL não é necessário para esses estágios de build e testes. Para subir tudo use docker-compose up -d.
+Aguarde a mensagem `Jenkins is fully up and running`. Pressione `Ctrl+C` para sair dos logs; o Jenkins continuará ativo. O MySQL não é necessário para esses estágios de build e testes. Para subir tudo use `docker-compose up -d`.
 
 ### 3. Executar e acompanhar a pipeline
 
@@ -117,7 +153,7 @@ A aplicação segue o padrão arquitetural em camadas, onde cada pacote possui r
 
 - **O que faz:** É a camada que conversa diretamente com o banco de dados.
 - **Responsabilidades:**
-  - Executar operações de CRUD (_Create, Read, Update, Delete_).
+  - Executar operações de CRUD (*Create, Read, Update, Delete*).
   - O Spring Data JPA permite criar uma interface que herda de `JpaRepository<Item, Long>`, gerando os comandos SQL automaticamente sem precisar escrever SQL na mão.
 
 ### 4. `entity` (Camada de Entidades de Banco de Dados)
@@ -149,28 +185,17 @@ model/Symbol.java
 model/ChestBetValue.java
 ```
 
-A interface `SymbolPicker` permite substituir o gerador aleatório por um
-mock nos testes. `Symbol` fica em `model/` por ser um enum do jogo, sem
-representar uma entidade persistida.
+A interface `SymbolPicker` permite substituir o gerador aleatório por um mock nos testes. `Symbol` fica em `model/` por ser um enum do jogo, sem representar uma entidade persistida.
 
-A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos
-`simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par
-devolve a aposta e três símbolos diferentes não pagam prêmio.
+A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos `simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par devolve a aposta e três símbolos diferentes não pagam prêmio.
 
-A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de
-`@JsonAlias`. Envie apenas um dos nomes em cada requisição.
+A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de `@JsonAlias`. Envie apenas um dos nomes em cada requisição.
 
-Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
-`ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até
-12 dígitos inteiros e 2 casas decimais. O limite técnico é
-`999999999999.99`; ele não define o balanceamento econômico dos jogos.
-Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
-silencioso. Valores aceitos são normalizados para duas casas decimais,
-e o prêmio continua sendo um número no JSON.
+Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo. `ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até 12 dígitos inteiros e 2 casas decimais. O limite técnico é `999999999999.99`; ele não define o balanceamento econômico dos jogos.
 
-A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`,
-`@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo
-formato usado em usuários (`{"error": "..."}`):
+Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento silencioso. Valores aceitos são normalizados para duas casas decimais, e o prêmio continua sendo um número no JSON.
+
+A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`):
 
 | Requisição | Status | `error` |
 | --- | --- | --- |
@@ -179,13 +204,9 @@ formato usado em usuários (`{"error": "..."}`):
 | Mais de 2 casas decimais ou mais de 12 dígitos inteiros | 400 | A aposta deve ter no máximo 12 dígitos inteiros e 2 casas decimais |
 | `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
 
-O `EnchantedChestService` também valida o valor por meio de `ChestBetValue`
-antes de sortear e lança `InvalidBetException`, pois pode ser chamado sem
-passar pelo controller. O cálculo do prêmio é privado e recebe somente
-os dados preparados por `open`.
+O `EnchantedChestService` também valida o valor por meio de `ChestBetValue` antes de sortear e lança `InvalidBetException`, pois pode ser chamado sem passar pelo controller. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
 
-Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm
-a implementação da `main`, incluindo seus pacotes e contratos.
+Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm a implementação da `main`, incluindo seus pacotes e contratos.
 
 Para executar a suíte com Java 21 e Maven:
 
