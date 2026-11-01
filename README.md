@@ -1,6 +1,8 @@
-# Taverna da Sorte - Backend
+# Taverna da Sorte — Backend
 
-Backend do projeto Taverna da Sorte desenvolvido em Java com Spring Boot.
+Backend do projeto Taverna da Sorte, desenvolvido em Java com Spring Boot. É responsável pelo processamento das regras de negócio, autenticação, persistência de dados e disponibilização dos serviços utilizados pelo frontend.
+
+Repositório do frontend: [taverna-sorte-frontend](https://github.com/C14-Inatel-2026-2/taverna-sorte-frontend).
 
 ---
 
@@ -10,11 +12,11 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
 
 ### Requisitos Funcionais
 
-- **RF01 – Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
-- **RF02 – Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
-- **RF03 – Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
-- **RF04 – Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
-- **RF05 – Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
+- **RF01 — Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
+- **RF02 — Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
+- **RF03 — Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
+- **RF04 — Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF05 — Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
 
 #### Detalhamento das funcionalidades
 
@@ -47,7 +49,7 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
   - Três símbolos iguais: prêmio correspondente ao valor da aposta multiplicado pelo multiplicador do símbolo.
   - Exatamente dois símbolos iguais: devolução do valor apostado.
   - Três símbolos diferentes: nenhum prêmio.
-- Rejeitar apostas ausentes, nulas, iguais a zero, negativas, superiores a R$ 10.000,00 ou com mais de duas casas decimais.
+- Rejeitar apostas ausentes, nulas, iguais a zero, negativas, superiores a R$ 10.000,00 ou com mais de duas casas decimais, conforme os critérios de aceite da história C14-20.
 
 **Histórico de partidas**
 
@@ -63,15 +65,66 @@ O sistema deverá:
 
 ### Requisitos Não Funcionais
 
-- **RNF01 – Arquitetura:** organizar o backend em camadas, separando responsabilidades entre controllers, services, repositories, entities e DTOs.
-- **RNF02 – Persistência:** utilizar MySQL para armazenar os dados da aplicação.
-- **RNF03 – Segurança:** utilizar BCrypt para proteção de senhas e JWT para autenticação e proteção de rotas.
-- **RNF04 – Validação:** validar os dados recebidos pela API e retornar respostas HTTP adequadas em caso de erros.
-- **RNF05 – Privacidade:** restringir o acesso aos dados de cada jogador, impedindo consultas não autorizadas ao histórico de outros usuários.
-- **RNF06 – Integridade:** preservar os registros das partidas concluídas e garantir a consistência das operações de compra.
-- **RNF07 – Testabilidade:** utilizar testes automatizados para verificar o comportamento dos serviços e endpoints.
-- **RNF08 – Integração contínua:** utilizar Jenkins para executar o processo de build e os testes automatizados.
-- **RNF09 – Implantação:** disponibilizar a aplicação em ambiente de produção por meio do Render.
+- **RNF01 — Arquitetura:** organizar o backend em camadas, separando responsabilidades entre controllers, services, repositories, entities e DTOs.
+- **RNF02 — Persistência:** utilizar MySQL para armazenar os dados da aplicação.
+- **RNF03 — Segurança:** utilizar BCrypt para proteção de senhas e JWT para autenticação e proteção de rotas.
+- **RNF04 — Validação:** validar os dados recebidos pela API e retornar respostas HTTP adequadas em caso de erros.
+- **RNF05 — Privacidade:** restringir o acesso aos dados de cada jogador, impedindo consultas não autorizadas ao histórico de outros usuários.
+- **RNF06 — Integridade:** preservar os registros das partidas concluídas e garantir a consistência das operações de compra.
+- **RNF07 — Testabilidade:** utilizar testes automatizados para verificar o comportamento dos serviços e endpoints.
+- **RNF08 — Integração contínua:** utilizar Jenkins para executar o processo de build e os testes automatizados.
+- **RNF09 — Implantação:** disponibilizar a aplicação em ambiente de produção por meio do Render.
+
+---
+
+## Integração com o Frontend
+
+O backend e o frontend são partes do mesmo sistema, mas possuem responsabilidades distintas. O frontend, desenvolvido em Flutter, apresenta as telas e permite a interação do jogador com o aplicativo. O backend, desenvolvido em Java com Spring Boot, processa as requisições, aplica as regras de negócio e realiza a persistência dos dados.
+
+A comunicação entre as duas partes ocorre por meio de requisições HTTP à API, com troca de dados em formato JSON.
+
+### Responsabilidades do Backend
+
+- **Autenticação:** validar as credenciais do jogador, emitir tokens JWT e proteger os endpoints que exigem autenticação.
+- **Jogos:** processar apostas, realizar sorteios e calcular os resultados e prêmios dos minijogos.
+- **Loja:** consultar itens disponíveis, validar compras, descontar moedas e atualizar o inventário.
+- **Saldo:** controlar o saldo de moedas utilizado nas operações do jogador.
+- **Inventário:** controlar os itens adquiridos e respeitar as regras de capacidade.
+- **Histórico:** registrar partidas concluídas e disponibilizar os registros do jogador autenticado.
+- **Persistência:** armazenar os dados necessários para manter as informações do jogador e suas partidas.
+
+### Responsabilidades do Frontend
+
+- Apresentar as telas e os elementos visuais do aplicativo.
+- Permitir a navegação entre as funcionalidades.
+- Receber os dados informados pelo jogador e enviá-los à API.
+- Apresentar os resultados e as mensagens retornadas pelo backend.
+- Exibir saldo, itens do inventário e histórico de partidas conforme os dados recebidos da API.
+
+As regras de negócio e as validações que afetam os dados do sistema devem ser aplicadas pelo backend. O frontend não deve ser considerado responsável por garantir a integridade de apostas, compras, saldo ou registros.
+
+### Contratos da API
+
+As requisições e respostas devem seguir os contratos definidos pelos endpoints do backend. Alterações em rotas, nomes de campos, formatos de dados ou códigos HTTP devem ser acompanhadas de ajustes correspondentes no frontend, preservando a compatibilidade entre as aplicações.
+
+Exemplo de requisição para o Baú Encantado:
+
+```json
+{
+  "valorAposta": 10.0
+}
+```
+
+Exemplo da estrutura de resposta:
+
+```json
+{
+  "simbolos": ["..."],
+  "premio": 20.0
+}
+```
+
+O frontend deve utilizar o resultado retornado pela API, sem reproduzir localmente o sorteio ou o cálculo do prêmio.
 
 ---
 
@@ -162,48 +215,52 @@ docker build -t taverna-backend .
 docker run --rm -p 8080:8080 -e SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3307/taverna_sorte taverna-backend
 ```
 
+---
+
 ## Arquitetura de Camadas (Package-by-Layer)
 
-A aplicação segue o padrão arquitetural em camadas, onde cada pacote possui responsabilidade única e bem definida:
+A aplicação segue o padrão arquitetural em camadas, onde cada pacote possui responsabilidade única e bem definida.
 
 ### 1. `controller` (Camada de Apresentação / Web)
 
-- **O que faz:** É a porta de entrada da sua aplicação. Escuta as requisições HTTP (`GET`, `POST`, `PUT`, `DELETE`) vindas do frontend, do Postman ou de outros sistemas.
+- **O que faz:** é a porta de entrada da aplicação. Recebe as requisições HTTP (`GET`, `POST`, `PUT`, `DELETE`) vindas do frontend, do Postman ou de outros sistemas.
 - **Responsabilidades:**
   - Validar dados básicos que chegam na requisição.
-  - Definir as rotas (ex: `/roleta/girar`, `/items`).
+  - Definir as rotas (ex.: `/roleta/girar`, `/items`).
   - Definir os códigos de status HTTP corretos (`200 OK`, `201 Created`, `404 Not Found`).
-  - Repassar o trabalho pesado para a camada `service`.
-- **Regra de ouro:** Controllers devem ser simples — nunca coloque regras de negócio ou comandos de banco de dados diretamente aqui!
+  - Repassar o trabalho para a camada `service`.
+- **Regra de ouro:** controllers devem ser simples — nunca coloque regras de negócio ou comandos de banco de dados diretamente aqui.
 
 ### 2. `service` (Camada de Negócio / Domínio)
 
-- **O que faz:** Reside toda a inteligência e as regras de negócio da Taverna da Sorte.
+- **O que faz:** contém a inteligência e as regras de negócio da Taverna da Sorte.
 - **Responsabilidades:**
-  - Fazer cálculos e validações de regras (ex: verificar se o jogador tem moedas suficientes para girar a roleta).
+  - Fazer cálculos e validações de regras (ex.: verificar se o jogador tem moedas suficientes para uma compra).
   - Orquestrar chamadas a um ou mais repositórios.
   - Controlar transações de banco (`@Transactional`).
 
 ### 3. `repository` (Camada de Acesso a Dados)
 
-- **O que faz:** É a camada que conversa diretamente com o banco de dados.
+- **O que faz:** é a camada que conversa diretamente com o banco de dados.
 - **Responsabilidades:**
   - Executar operações de CRUD (*Create, Read, Update, Delete*).
-  - O Spring Data JPA permite criar uma interface que herda de `JpaRepository<Item, Long>`, gerando os comandos SQL automaticamente sem precisar escrever SQL na mão.
+  - O Spring Data JPA permite criar uma interface que herda de `JpaRepository<Item, Long>`, gerando os comandos SQL automaticamente sem precisar escrever SQL manualmente.
 
 ### 4. `entity` (Camada de Entidades de Banco de Dados)
 
-- **O que faz:** Representa o esquema das tabelas do banco de dados relacional mapeado em classes Java (via JPA/Hibernate).
+- **O que faz:** representa o esquema das tabelas do banco de dados relacional mapeado em classes Java (via JPA/Hibernate).
 - **Responsabilidades:**
   - Cada atributo da classe representa uma coluna na tabela.
   - Mapear chaves primárias (`@Id`), auto-incrementos (`@GeneratedValue`) e relacionamentos de chave estrangeira (`@ManyToOne`, `@OneToMany`).
 
 ### 5. `dto` (Data Transfer Object / Tráfego de Dados)
 
-- **O que faz:** São objetos simples que servem apenas para transportar dados entre o cliente e a API.
+- **O que faz:** são objetos simples que servem para transportar dados entre o cliente e a API.
 - **Por que ela existe se já temos a `entity`?**
-  - **Segurança:** Evita expor dados confidenciais ou colunas internas do banco (ex: senha criptografada, flags de auditoria).
-  - **Controle:** Quando o usuário cadastra um item, ele não envia o `id` (pois o banco gera). Então podemos ter um `ItemRequestDTO(String nome, double preco)` para entrada e um `ItemResponseDTO(Long id, String nome, double preco)` para saída.
+  - **Segurança:** evita expor dados confidenciais ou colunas internas do banco (ex.: senha criptografada, flags de auditoria).
+  - **Controle:** quando o usuário cadastra um item, ele não envia o `id` (pois o banco gera). Assim, podemos ter um `ItemRequestDTO(String nome, double preco)` para entrada e um `ItemResponseDTO(Long id, String nome, double preco)` para saída.
+
+---
 
 ## Organização do Baú Encantado
 
@@ -228,13 +285,11 @@ A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de `@
 
 Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo. `ChestBetValue` centraliza as regras de validação: valor obrigatório, positivo e com até duas casas decimais.
 
-**Limite funcional da aposta:** conforme o critério de aceite da história C14-20, o valor máximo permitido deve ser R$ 10.000,00. A implementação também deve rejeitar valores com mais de duas casas decimais, sem arredondamento silencioso.
+**Limite funcional da aposta:** conforme o critério de aceite da história C14-20, o valor máximo permitido deve ser R$ 10.000,00. Essa regra deve ser aplicada e testada pelo backend antes da realização do sorteio. A validação técnica de quantidade de dígitos e casas decimais não substitui esse limite funcional.
 
-Entradas com mais de duas casas decimais devem ser rejeitadas. Valores aceitos são normalizados para duas casas decimais, e o prêmio continua sendo um número no JSON.
+A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`).
 
-A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`):
-
-| Requisição | Status | Resultado esperado |
+| Requisição | Status esperado | Resultado esperado |
 |---|---|---|
 | `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
 | `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
@@ -252,3 +307,12 @@ Para executar a suíte com Java 21 e Maven:
 mvn clean test
 ```
 
+---
+
+## Equipe
+
+- [David Fernandes Barbon](https://github.com/DavidFBar)
+- [João Victor Samuel de Faria](https://github.com/joaovsfaria)
+- [João Vitor Souza Aldet](https://github.com/joaoaldet)
+- [Lucas Emanuel da Silva Godoi](https://github.com/luscagodoi)
+- [Luiz Gustavo Guimarães Santos](https://github.com/LuizGuimaraesz)
