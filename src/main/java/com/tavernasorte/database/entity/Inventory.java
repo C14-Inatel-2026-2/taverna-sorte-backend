@@ -21,7 +21,7 @@ public class Inventory {
     private Long id;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JsonProperty("itens")
+    @JsonProperty("items")
     private List<Item> items = new ArrayList<>();
 
     public void addItem(Item item) {

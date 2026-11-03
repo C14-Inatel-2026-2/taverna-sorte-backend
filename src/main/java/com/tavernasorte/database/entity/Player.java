@@ -10,12 +10,12 @@ public class Player {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "saldo")
-    @JsonProperty("saldo")
+    @Column(name = "balance")
+    @JsonProperty("balance")
     private int balance;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "inventario_id")
+    @JoinColumn(name = "inventory_id")
     private Inventory inventory;
 
     private String username;
