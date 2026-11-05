@@ -1,6 +1,5 @@
 package com.tavernasorte.database.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,7 +20,6 @@ public class Inventory {
     private Long id;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JsonProperty("items")
     private List<Item> items = new ArrayList<>();
 
     public void addItem(Item item) {
@@ -33,7 +31,6 @@ public class Inventory {
         items.add(item);
     }
 
-    @JsonProperty("limiteItens")
     public int getItemLimit() {
         return ITEM_LIMIT;
     }
