@@ -71,4 +71,17 @@ public class InventoryTest {
         assertEquals(0, inventory.getItems().size());
     }
 
+    @Test
+    void shouldNotAllowExternalModificationOfItems() {
+        Inventory inventory = new Inventory();
+        Item item = new Item();
+
+        inventory.addItem(item);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> inventory.getItems().add(new Item())
+        );
+    }
+
 }
