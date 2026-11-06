@@ -4,6 +4,8 @@ import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ItemService {
 
@@ -15,5 +17,9 @@ public class ItemService {
 
     public Item findById(Long id) {
         return itemRepository.findById(id).orElse(null);
+    }
+
+    public List<Item> findAll() {
+        return itemRepository.findAll();
     }
 }
