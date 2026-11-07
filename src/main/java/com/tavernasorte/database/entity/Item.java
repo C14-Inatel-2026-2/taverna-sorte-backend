@@ -14,20 +14,20 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // gerando o ID do item automaticamente
     private Long id; // Long aceita valores nulos antes do ID ser gerado pelo banco
 
-    @Column(name = "nome")
-    @JsonProperty("nome")
+    @Column(name = "name")
+    @JsonProperty("name")
     private String name;
-    @Column(name = "preco")
-    @JsonProperty("preco")
+    @Column(name = "price")
+    @JsonProperty("price")
     private int price;
-    @Column(name = "multiplicador")
-    @JsonProperty("multiplicador")
+    @Column(name = "multiplier")
+    @JsonProperty("multiplier")
     private double multiplier;
-    @Column(name = "sorte")
-    @JsonProperty("sorte")
+    @Column(name = "luck")
+    @JsonProperty("luck")
     private double luck;
-    @Column(name = "descricao")
-    @JsonProperty("descricao")
+    @Column(name = "description")
+    @JsonProperty("description")
     private String description;
 
     public Item() {
