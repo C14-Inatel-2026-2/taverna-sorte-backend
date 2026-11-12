@@ -15,7 +15,7 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
 - **RF01 — Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
 - **RF02 — Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
 - **RF03 — Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
-- **RF04 — Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF04 — Roleta:** permitir apostas em números de 1 a 10, sortear o resultado e calcular o prêmio da rodada. Integração com saldo e histórico em desenvolvimento.
 - **RF05 — Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
 
 #### Detalhamento das funcionalidades
@@ -311,18 +311,48 @@ mvn clean test
 
 ## Refactorings
 
-### RandomSymbolPickerTest
+### Roleta — `RouletteService` e `RouletteServiceTest`
 
 | Smell | Refactoring aplicado | Por quê | Link do PR |
 |---|---|---|---|
-| Duplicated Code: construção de `RandomSymbolPicker` com o mesmo mock em dois testes. | Extract Method: preparação comum em `setUp()`, executado por `@BeforeEach`. | Centralizar a criação do objeto testado e manter uma instância nova para cada execução. | Pendente: inserir a URL do PR desta alteração. |
-| Duplicated Code: teste separado do limite aleatório repete a preparação e a chamada já presentes no teste parametrizado. | Consolidate Tests: incorporar a verificação de `nextInt(Symbol.values().length)` ao teste com `@EnumSource`. | Verificar o símbolo retornado e o limite utilizado para todos os símbolos, removendo o cenário redundante sem perder suas verificações. | Pendente: inserir a URL do PR desta alteração. |
+| Magic Numbers: `nextInt(10) + 1` não explicita o significado dos limites. | Replace Magic Number with Symbolic Constant: definir `MIN_NUMBER`, `MAX_NUMBER` e `NUMBER_COUNT` em `RouletteBet`. | Compartilhar os limites entre validação e sorteio sem alterar o intervalo de 1 a 10. | Pendente: inserir a URL real do PR. |
+| Dependência de implementação concreta: o serviço exige `Random`, mas usa apenas a operação de geração de inteiros. | Generalize Type: usar `RandomGenerator` no atributo e no construtor de injeção. | Depender do contrato necessário ao sorteio e permitir outras implementações; o construtor público continua usando `new Random()`. | Pendente: inserir a URL real do PR. |
 
-O teste do construtor padrão continua separado, usando um gerador real. As alterações acima se limitam aos testes e preservam o comportamento de produção.
+| Duplicated Code: testes repetem a construção do serviço com o mesmo mock. | Extract Method: preparação em `setUp()` com `@BeforeEach`. | Centralizar a preparação e manter isolamento entre execuções. | Pendente: inserir a URL real do PR. |
 
-Validação local em 11/11/2026 (JDK 25, compilação com `release 21`): os comandos de build e testes passaram antes e depois. Antes: 116 testes; depois: 115 testes; nenhuma falha, erro ou teste ignorado. A redução de um caso corresponde ao teste redundante incorporado ao parametrizado. A execução no Jenkins com Java 21 permanece pendente.
+O teste determinístico de conversão foi parametrizado para verificar os dez valores de entrada (0 a 9) e seus resultados (1 a 10), incluindo o limite de `nextInt(10)`. Os testes com gerador real e de propagação de erro foram preservados. A rota `GET /roleta/girar` e seu retorno permanecem iguais.
 
-Para a entrega, cada integrante deve registrar pelo menos dois refactorings com sua autoria e o link real do respectivo PR. Executar `mvn clean package -DskipTests` e `mvn verify` antes e depois das alterações, e anexar ao PR os links das duas execuções verdes do Jenkins. A validação local não substitui essas evidências da pipeline.
+Validação local em 11/11/2026: `mvn clean package -DskipTests` e `mvn verify` passaram antes e depois. Antes: **116 testes**; depois: **125 testes**; sem falhas, erros ou testes ignorados. Ambiente: JDK 25, compilando com `release 21`.
+
+A implementação da rodada descrita abaixo é funcionalidade nova, separada dos refactorings. Sua validação local repetiu os mesmos comandos: **125 testes antes e 168 depois**, sem falhas, erros ou testes ignorados.
+
+Para concluir a entrega, inserir o link real do PR na tabela e anexar ao PR os links das execuções verdes do Jenkins antes e depois, com Java 21. Essas execuções da pipeline ainda não foram confirmadas; a validação local não as substitui. Cada integrante deve registrar pelo menos dois refactorings de sua autoria.
+
+## Jogar roleta
+
+`POST /roleta/jogar` recebe uma aposta em um número inteiro de **1 a 10**. `valorAposta` é obrigatório, positivo, com até duas casas decimais e limitado a **10000.00** unidades da moeda do jogo. Entradas inválidas são rejeitadas antes do sorteio com HTTP 400 e `{"error":"..."}`.
+
+```json
+{"numeroEscolhido":7,"valorAposta":10.00}
+```
+
+Exemplo de resposta para um acerto:
+
+```json
+{
+  "numeroEscolhido": 7,
+  "numeroSorteado": 7,
+  "valorAposta": 10.00,
+  "venceu": true,
+  "premio": 90.00
+}
+```
+
+Um acerto paga **9 vezes a aposta como prêmio total**, incluindo o valor apostado; o ganho líquido seria 8 vezes a aposta. Uma derrota retorna `venceu: false` e `premio: 0.00`. São dez resultados equiprováveis, com retorno teórico de 90% sob essa regra. Valores monetários usam `BigDecimal`; `RouletteBet` concentra validação e cálculo, o serviço orquestra a rodada e o controller expõe a API. Os DTOs usam nomes JSON em português, seguindo o baú.
+
+O endpoint anterior `GET /roleta/girar` continua retornando somente um número inteiro de 1 a 10. O frontend deve usar a nova rota para jogar uma rodada com aposta e prêmio calculados pelo backend.
+
+Assim como nos outros jogos atuais, a rodada não movimenta saldo nem persiste histórico. Essa integração depende de identificação do jogador autenticado, persistência de partidas e compatibilização do saldo inteiro de `Player` com os valores decimais das apostas. Portanto, esta versão conclui o cálculo da rodada, mas ainda não representa um fluxo com carteira e histórico integrados.
 
 ## Equipe
 

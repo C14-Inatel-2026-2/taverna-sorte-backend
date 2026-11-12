@@ -1,7 +1,6 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.model.Symbol;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,29 +21,32 @@ class RandomSymbolPickerTest {
     @Mock
     private Random random;
 
-    private RandomSymbolPicker picker;
-
-    @BeforeEach
-    void setUp() {
-        picker = new RandomSymbolPicker(random);
-    }
-
     @ParameterizedTest
     @EnumSource(Symbol.class)
-    void shouldReturnSymbolAtRandomIndexUsingAllSymbolsAsBound(Symbol expected) {
+    void shouldReturnSymbolAtRandomIndex(Symbol expected) {
+        RandomSymbolPicker picker = new RandomSymbolPicker(random);
         when(random.nextInt(Symbol.values().length)).thenReturn(expected.ordinal());
 
         Symbol picked = picker.pick();
 
         assertEquals(expected, picked);
+    }
+
+    @Test
+    void shouldUseAllSymbolsAsRandomBound() {
+        RandomSymbolPicker picker = new RandomSymbolPicker(random);
+        when(random.nextInt(Symbol.values().length)).thenReturn(0);
+
+        picker.pick();
+
         verify(random).nextInt(Symbol.values().length);
     }
 
     @Test
     void shouldPickValidSymbolWithoutMock() {
-        RandomSymbolPicker defaultPicker = new RandomSymbolPicker();
+        RandomSymbolPicker picker = new RandomSymbolPicker();
 
-        Symbol picked = defaultPicker.pick();
+        Symbol picked = picker.pick();
 
         assertNotNull(picked);
     }
