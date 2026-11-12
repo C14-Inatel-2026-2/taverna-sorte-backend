@@ -30,10 +30,10 @@ public class PlayerTest {
     }
 
     @Test
-    void shouldIgnoreNegativeBalanceAddition() {
+    void shouldRejectNegativeBalanceAddition() {
         Player player = new Player();
 
-        player.addBalance(-50);
+        assertThrows(IllegalArgumentException.class, () -> player.addBalance(-50));
 
         assertEquals(0, player.getBalance());
     }

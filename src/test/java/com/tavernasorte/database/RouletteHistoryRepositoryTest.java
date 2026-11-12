@@ -2,7 +2,6 @@ package com.tavernasorte.database;
 
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.entity.RouletteHistory;
-import com.tavernasorte.database.entity.User;
 import com.tavernasorte.database.repository.RouletteHistoryRepository;
 import com.tavernasorte.dto.RoulettePlayResponse;
 import com.tavernasorte.model.RouletteBetType;
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 
@@ -24,8 +22,8 @@ class RouletteHistoryRepositoryTest {
 
     @Test
     void shouldPersistSnapshotsAndFilterPlayerInReverseChronologicalOrder() {
-        Player first = persistPlayer("first@example.com");
-        Player second = persistPlayer("second@example.com");
+        Player first = persistPlayer("first");
+        Player second = persistPlayer("second");
         Long playerId = entityManager.getId(first, Long.class);
         var win = new RoulettePlayResponse(RouletteBetType.RED, null, 10, 1, "RED", true, 20);
         var loss = new RoulettePlayResponse(RouletteBetType.NUMBER, 7, 10, 8, "BLACK", false, 0);
@@ -49,10 +47,7 @@ class RouletteHistoryRepositoryTest {
         assertEquals(later, records.get(0).getPlayedAt());
     }
 
-    private Player persistPlayer(String email) {
-        User user = entityManager.persist(new User("Jogador", email, "hash-de-teste"));
-        Player player = new Player();
-        ReflectionTestUtils.setField(player, "user", user);
-        return entityManager.persist(player);
+    private Player persistPlayer(String username) {
+        return entityManager.persist(new Player(username));
     }
 }
