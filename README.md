@@ -281,11 +281,20 @@ A interface `SymbolPicker` permite substituir o gerador aleatório por um mock n
 
 A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos `simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par devolve a aposta e três símbolos diferentes não pagam prêmio.
 
-A API também aceita o nome anterior do campo, `{"valor": 10.0}`, por meio de `@JsonAlias`. Envie apenas um dos nomes em cada requisição.
+Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
+`ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até
+5 dígitos inteiros e 2 casas decimais, e no máximo `10000.00`.
+Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
+silencioso. Valores aceitos são normalizados para duas casas decimais,
+e o prêmio continua sendo um número no JSON.
 
-Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo. `ChestBetValue` centraliza as regras de validação: valor obrigatório, positivo e com até duas casas decimais.
+O corpo da requisição é estrito: o único campo aceito é `valorAposta`, e
+qualquer outro campo (inclusive o antigo `valor`) rejeita a requisição.
+Isso vale só para o baú; os demais endpoints não foram alterados.
 
-**Limite funcional da aposta:** conforme o critério de aceite da história C14-20, o valor máximo permitido deve ser R$ 10.000,00. Essa regra deve ser aplicada e testada pelo backend antes da realização do sorteio. A validação técnica de quantidade de dígitos e casas decimais não substitui esse limite funcional.
+A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`,
+`@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo
+formato usado em usuários (`{"error": "..."}`):
 
 A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`).
 
@@ -293,9 +302,9 @@ A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`
 |---|---|---|
 | `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
 | `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
-| `{"valorAposta": 10000.01}` | 400 | A aposta não pode ultrapassar R$ 10.000,00 |
-| Mais de 2 casas decimais | 400 | A aposta deve ter no máximo 2 casas decimais |
-| `{"valorAposta": "abc"}` ou JSON malformado | 400 | Valor inválido na requisição |
+| Mais de 2 casas decimais ou mais de 5 dígitos inteiros | 400 | A aposta deve ter no máximo 5 dígitos inteiros e 2 casas decimais |
+| Acima de `10000.00` (ex.: `10000.01`) | 400 | O valor máximo da aposta é 10000.00 |
+| `{"valorAposta": "abc"}`, JSON malformado ou campo desconhecido (ex.: `{"valor": 10.0}`) | 400 | Valor inválido na requisição |
 
 O `EnchantedChestService` também deve validar o valor por meio de `ChestBetValue` antes de sortear e lançar `InvalidBetException`, pois pode ser chamado sem passar pelo controller. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
 

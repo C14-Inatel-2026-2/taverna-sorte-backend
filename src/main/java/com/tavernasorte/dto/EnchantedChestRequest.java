@@ -1,6 +1,6 @@
 package com.tavernasorte.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.ChestBetValue;
 import jakarta.validation.constraints.Digits;
@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 
 public class EnchantedChestRequest {
 
-    @JsonAlias("valor")
     @JsonProperty("valorAposta")
     @NotNull(message = "O valor da aposta é obrigatório")
     @Positive(message = "O valor da aposta deve ser maior que zero")
@@ -33,5 +32,11 @@ public class EnchantedChestRequest {
 
     public void setBetAmount(BigDecimal betAmount) {
         this.betAmount = betAmount;
+    }
+
+    /** Torna o corpo estrito: qualquer campo diferente de "valorAposta" rejeita a requisição. */
+    @JsonAnySetter
+    private void rejectUnknownField(String name, Object value) {
+        throw new IllegalArgumentException("Campo desconhecido: " + name);
     }
 }

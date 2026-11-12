@@ -83,9 +83,9 @@ class EnchantedChestServiceTest {
     void shouldCalculateExactMaximumPrize() {
         when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
-        EnchantedChestResponse result = service.open(new BigDecimal("999999999999.99"));
+        EnchantedChestResponse result = service.open(ChestBetValue.MAXIMUM);
 
-        assertEquals(new BigDecimal("19999999999999.80"), result.getPrize());
+        assertEquals(new BigDecimal("200000.00"), result.getPrize());
     }
 
     @ParameterizedTest
@@ -99,12 +99,22 @@ class EnchantedChestServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0.001", "10.000", "999999999999.999", "1000000000000.00", "1e308"})
-    void shouldRejectOutOfRangeAmountBeforePickingSymbols(String value) {
+    @ValueSource(strings = {"0.001", "10.000", "10000.001", "100000", "1000000000000.00", "1e308"})
+    void shouldRejectInvalidFormatBeforePickingSymbols(String value) {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
                 () -> service.open(new BigDecimal(value)));
 
         assertEquals(ChestBetValue.INVALID_FORMAT, exception.getMessage());
+        verifyNoInteractions(symbolPicker);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"10000.01", "50000", "99999.99"})
+    void shouldRejectAmountAboveMaximumBeforePickingSymbols(String value) {
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(new BigDecimal(value)));
+
+        assertEquals(ChestBetValue.INVALID_MAXIMUM_VALUE, exception.getMessage());
         verifyNoInteractions(symbolPicker);
     }
 
