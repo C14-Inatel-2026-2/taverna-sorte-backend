@@ -15,7 +15,7 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
 - **RF01 — Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
 - **RF02 — Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
 - **RF03 — Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
-- **RF04 — Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF04 — Roleta:** permitir apostas em números de 1 a 10, sortear o resultado e calcular o prêmio da rodada. Integração com saldo e histórico em desenvolvimento.
 - **RF05 — Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
 
 #### Detalhamento das funcionalidades
@@ -308,6 +308,48 @@ mvn clean test
 ```
 
 ---
+
+## Refactorings
+
+### Roleta — `RouletteService` e `RouletteServiceTest`
+
+| Smell | Refactoring aplicado | Por quê | Link do PR |
+|---|---|---|---|
+| Magic Numbers: `nextInt(10) + 1` não explicita o significado dos limites. | Replace Magic Number with Symbolic Constant: definir `MIN_NUMBER`, `MAX_NUMBER` e `NUMBER_COUNT` em `RouletteBet`. | Compartilhar os limites entre validação e sorteio sem alterar o intervalo de 1 a 10. | Pendente: inserir a URL real do PR. |
+| Dependência de implementação concreta: o serviço exige `Random`, mas usa apenas a operação de geração de inteiros. | Generalize Type: usar `RandomGenerator` no atributo e no construtor de injeção. | Depender do contrato necessário ao sorteio e permitir outras implementações; o construtor público continua usando `new Random()`. | Pendente: inserir a URL real do PR. |
+| Duplicated Code: testes repetem a construção do serviço com o mesmo mock. | Extract Method: preparação em `setUp()` com `@BeforeEach`. | Centralizar a preparação e manter isolamento entre execuções. | Pendente: inserir a URL real do PR. |
+
+O teste determinístico de conversão foi parametrizado para verificar os limites de entrada (0 e 9) e seus resultados (1 e 10), incluindo o limite de `nextInt(10)`. Os testes com gerador real e de propagação de erro foram preservados. A rota `GET /roleta/girar` e seu retorno permanecem iguais.
+
+Validação local da versão anterior: 168 testes passaram. Após simplificar a suíte, `mvn clean package -DskipTests` e `mvn verify` passaram: **130 testes**, sem falhas, erros ou testes ignorados (JDK 25, compilando com `release 21`). A roleta ficou com **18 casos**, antes eram 56. Os testes adicionados e refactorings se limitam à roleta; a implementação da rodada é funcionalidade nova.
+
+Para concluir a entrega, inserir o link real do PR na tabela e anexar ao PR os links das execuções verdes do Jenkins antes e depois, com Java 21. Essas execuções da pipeline ainda não foram confirmadas; a validação local não as substitui. Cada integrante deve registrar pelo menos dois refactorings de sua autoria.
+
+## Jogar roleta
+
+`POST /roleta/jogar` recebe uma aposta em um número inteiro de **1 a 10**. `betAmount` é obrigatório, positivo, com até duas casas decimais e limitado a **10000.00** unidades da moeda do jogo. Entradas inválidas são rejeitadas antes do sorteio com HTTP 400 e `{"error":"..."}`.
+
+```json
+{"chosenNumber":7,"betAmount":10.00}
+```
+
+Exemplo de resposta para um acerto:
+
+```json
+{
+  "chosenNumber": 7,
+  "drawnNumber": 7,
+  "betAmount": 10.00,
+  "won": true,
+  "prize": 90.00
+}
+```
+
+Um acerto paga **9 vezes a aposta como prêmio total**, incluindo o valor apostado; o ganho líquido seria 8 vezes a aposta. Uma derrota retorna `won: false` e `prize: 0.00`. São dez resultados equiprováveis, com retorno teórico de 90% sob essa regra. Valores monetários usam `BigDecimal`; `RouletteBet` concentra validação e cálculo, o serviço orquestra a rodada e o controller expõe a API. Os DTOs usam os nomes dos componentes dos records, sem `@JsonProperty`.
+
+O endpoint anterior `GET /roleta/girar` continua retornando somente um número inteiro de 1 a 10. O frontend deve usar a nova rota para jogar uma rodada com aposta e prêmio calculados pelo backend.
+
+Assim como nos outros jogos atuais, a rodada não movimenta saldo nem persiste histórico. Essa integração depende de identificação do jogador autenticado, persistência de partidas e compatibilização do saldo inteiro de `Player` com os valores decimais das apostas. Portanto, esta versão conclui o cálculo da rodada, mas ainda não representa um fluxo com carteira e histórico integrados.
 
 ## Equipe
 
