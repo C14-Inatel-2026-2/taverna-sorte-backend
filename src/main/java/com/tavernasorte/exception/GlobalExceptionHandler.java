@@ -12,6 +12,11 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PlayerNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handlePlayerNotFound(PlayerNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", exception.getMessage()));
+    }
+
     @ExceptionHandler(EmailAlreadyInUseException.class)
     public ResponseEntity<Map<String, String>> handleEmailAlreadyInUse(
             EmailAlreadyInUseException exception

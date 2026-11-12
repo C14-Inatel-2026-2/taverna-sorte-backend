@@ -1,6 +1,9 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.database.entity.Player;
+import com.tavernasorte.dto.CreatePlayerRequest;
+import com.tavernasorte.dto.PlayerResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import com.tavernasorte.service.PlayerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +19,19 @@ public class PlayerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Player> getPlayer(@PathVariable Long id) {
-        Player player = playerService.findById(id);
+    public ResponseEntity<PlayerResponse> getPlayer(@PathVariable Long id) {
+        PlayerResponse player = playerService.findById(id);
 
         if (player == null) {
             return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(player);
+    }
+
+    @PostMapping
+    public ResponseEntity<PlayerResponse> create(@Valid @RequestBody CreatePlayerRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(playerService.create(request.getUsername()));
     }
 
     @PostMapping("/{id}/dance")
