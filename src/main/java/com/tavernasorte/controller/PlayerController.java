@@ -25,4 +25,15 @@ public class PlayerController {
 
         return ResponseEntity.ok(player);
     }
+
+    @PostMapping("/{id}/dance")
+    public ResponseEntity<Void> danceForGnome(@PathVariable Long id) {
+        boolean success = playerService.danceForGnome(id);
+
+        if (!success) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok().build();
+    }
 }
