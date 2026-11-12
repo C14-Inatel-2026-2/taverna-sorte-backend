@@ -27,7 +27,7 @@ public class Player {
     private String username;
 
     public Player() {
-        this.balance = 0;
+        this.balance = 100;
         this.inventory = new Inventory();
     }
 

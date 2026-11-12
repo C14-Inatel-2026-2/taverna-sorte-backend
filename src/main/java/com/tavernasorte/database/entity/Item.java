@@ -19,8 +19,6 @@ public class Item {
     private int price;
     @Column(name = "multiplier")
     private double multiplier;
-    @Column(name = "luck")
-    private double luck;
     @Column(name = "description")
     private String description;
 
@@ -64,11 +62,4 @@ public class Item {
         this.description = description;
     }
 
-    public double getLuck() {
-        return luck;
-    }
-
-    public void setLuck(double luck) {
-        this.luck = luck;
-    }
 }
