@@ -18,7 +18,7 @@ public class Item {
     @Column(name = "price")
     private int price;
     @Column(name = "multiplier")
-    private double multiplier;
+    private int multiplier;
     @Column(name = "description")
     private String description;
 
@@ -46,11 +46,11 @@ public class Item {
         return id;
     }
 
-    public double getMultiplier() {
+    public int getMultiplier() {
         return multiplier;
     }
 
-    public void setMultiplier(double multiplier) {
+    public void setMultiplier(int multiplier) {
         this.multiplier = multiplier;
     }
 
