@@ -309,6 +309,21 @@ mvn clean test
 
 ---
 
+## Refactorings
+
+### RandomSymbolPickerTest
+
+| Smell | Refactoring aplicado | Por quê | Link do PR |
+|---|---|---|---|
+| Duplicated Code: construção de `RandomSymbolPicker` com o mesmo mock em dois testes. | Extract Method: preparação comum em `setUp()`, executado por `@BeforeEach`. | Centralizar a criação do objeto testado e manter uma instância nova para cada execução. | Pendente: inserir a URL do PR desta alteração. |
+| Duplicated Code: teste separado do limite aleatório repete a preparação e a chamada já presentes no teste parametrizado. | Consolidate Tests: incorporar a verificação de `nextInt(Symbol.values().length)` ao teste com `@EnumSource`. | Verificar o símbolo retornado e o limite utilizado para todos os símbolos, removendo o cenário redundante sem perder suas verificações. | Pendente: inserir a URL do PR desta alteração. |
+
+O teste do construtor padrão continua separado, usando um gerador real. As alterações acima se limitam aos testes e preservam o comportamento de produção.
+
+Validação local em 11/11/2026 (JDK 25, compilação com `release 21`): os comandos de build e testes passaram antes e depois. Antes: 116 testes; depois: 115 testes; nenhuma falha, erro ou teste ignorado. A redução de um caso corresponde ao teste redundante incorporado ao parametrizado. A execução no Jenkins com Java 21 permanece pendente.
+
+Para a entrega, cada integrante deve registrar pelo menos dois refactorings com sua autoria e o link real do respectivo PR. Executar `mvn clean package -DskipTests` e `mvn verify` antes e depois das alterações, e anexar ao PR os links das duas execuções verdes do Jenkins. A validação local não substitui essas evidências da pipeline.
+
 ## Equipe
 
 - [David Fernandes Barbon](https://github.com/DavidFBar)
