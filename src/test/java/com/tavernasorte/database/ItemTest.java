@@ -41,13 +41,6 @@ public class ItemTest {
     }
 
     @Test
-    void shouldSetLuck(){
-        Item item = new Item();
-        item.setLuck(2.0);
-        assertEquals(2.0, item.getLuck());
-    }
-
-    @Test
     void shouldSetDescription(){
         Item item = new Item();
         item.setDescription("Descrição de um item.");

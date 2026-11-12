@@ -1,6 +1,5 @@
 package com.tavernasorte.database.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,12 +10,19 @@ public class Player {
     private Long id;
 
     @Column(name = "balance")
-    @JsonProperty("balance")
     private int balance;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "inventory_id")
     private Inventory inventory;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false,
+            unique = true
+    )
+    private User user;
 
     private String username;
 

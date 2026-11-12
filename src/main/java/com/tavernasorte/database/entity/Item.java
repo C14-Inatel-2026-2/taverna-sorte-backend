@@ -1,6 +1,5 @@
 package com.tavernasorte.database.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,19 +14,12 @@ public class Item {
     private Long id; // Long aceita valores nulos antes do ID ser gerado pelo banco
 
     @Column(name = "name")
-    @JsonProperty("name")
     private String name;
     @Column(name = "price")
-    @JsonProperty("price")
     private int price;
     @Column(name = "multiplier")
-    @JsonProperty("multiplier")
     private double multiplier;
-    @Column(name = "luck")
-    @JsonProperty("luck")
-    private double luck;
     @Column(name = "description")
-    @JsonProperty("description")
     private String description;
 
     public Item() {
@@ -70,11 +62,4 @@ public class Item {
         this.description = description;
     }
 
-    public double getLuck() {
-        return luck;
-    }
-
-    public void setLuck(double luck) {
-        this.luck = luck;
-    }
 }
