@@ -3,26 +3,35 @@ package com.tavernasorte.service;
 import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.ItemRepository;
+import com.tavernasorte.database.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ShopService {
 
     private final ItemRepository itemRepository;
+    private final PlayerRepository playerRepository;
 
-    public ShopService(ItemRepository itemRepository) {
+    public ShopService(
+            ItemRepository itemRepository,
+            PlayerRepository playerRepository
+    ) {
         this.itemRepository = itemRepository;
+        this.playerRepository = playerRepository;
     }
 
-    public boolean buyItem(Player player, Long itemId) {
+    @Transactional
+    public boolean buyItem(Long playerId, Long itemId) {
 
-        if (player == null || itemId == null) {
+        if (playerId == null || itemId == null) {
             return false;
         }
 
+        Player player = playerRepository.findById(playerId).orElse(null);
         Item item = itemRepository.findById(itemId).orElse(null);
 
-        if (item == null) {
+        if (player == null || item == null) {
             return false;
         }
 
