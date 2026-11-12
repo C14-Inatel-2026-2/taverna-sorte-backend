@@ -309,6 +309,20 @@ mvn clean test
 
 ---
 
+## Refactorings
+
+### Roleta — constantes do intervalo de sorteio
+
+| Smell | Refactoring aplicado | Por quê | Link do PR |
+|---|---|---|---|
+| Magic Numbers: `random.nextInt(10) + 1` não explicita o significado dos valores. | Replace Magic Number with Symbolic Constant: definir `MIN_RESULT`, `MAX_RESULT` e derivar `RESULT_COUNT` em `RouletteService`. | Tornar explícitos os limites e a quantidade de resultados, preservando o sorteio de 1 a 10. | Pendente: inserir a URL real deste PR. |
+
+Esta entrega contém um único refactoring, na branch `refactor/roulette-range-constants`. O contrato de `GET /roleta/girar`, o controller e os testes existentes foram preservados.
+
+Validação local: `mvn clean package -DskipTests` e `mvn verify` passaram antes e depois, com **116 testes**, sem falhas, erros ou testes ignorados. Ambiente: JDK 25, compilando com `release 21`. Os logs locais estão em `target/roulette-refactor-evidence/` e são removidos por `mvn clean`.
+
+Para concluir a entrega, substituir o campo pendente pelo link real do PR e anexar ao PR as evidências das execuções verdes do Jenkins antes e depois, com Java 21. A execução no Jenkins ainda não foi confirmada.
+
 ## Equipe
 
 - [David Fernandes Barbon](https://github.com/DavidFBar)
