@@ -365,8 +365,8 @@ removidos por `mvn clean`.
 
 | Smell | Refactoring aplicado | Por quê | Link do PR |
 |---|---|---|---|
-| Magic Numbers no sorteio | Replace Magic Number with Symbolic Constant: `MIN_NUMBER`, `MAX_NUMBER` e `NUMBER_COUNT` | Nomear os limites e derivar a quantidade de resultados. A mudança para 0–36 é funcionalidade nova, separada dessa melhoria de clareza. | Pendente: inserir o link do novo PR. |
-| Construção repetida do serviço com mock nos testes | Extract Method: `setUp()` com `@BeforeEach` | Centralizar a preparação e manter cada teste isolado. | Pendente: inserir o link do novo PR. |
+| Magic Numbers no sorteio | Replace Magic Number with Symbolic Constant: `MIN_NUMBER`, `MAX_NUMBER` e `NUMBER_COUNT` | Nomear os limites e derivar a quantidade de resultados. A mudança para 0–36 é funcionalidade nova, separada dessa melhoria de clareza. | [Link do PR](https://github.com/C14-Inatel-2026-2/taverna-sorte-backend/pull/28) |
+| Construção repetida do serviço com mock nos testes | Extract Method: `setUp()` com `@BeforeEach` | Centralizar a preparação e manter cada teste isolado. | [Link do PR](https://github.com/C14-Inatel-2026-2/taverna-sorte-backend/pull/28) |
 
 Os refactorings e testes se limitam à roleta. Para a entrega, substituir os
 links pendentes e anexar ao PR as evidências da pipeline verde antes e depois;
