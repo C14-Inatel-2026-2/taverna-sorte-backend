@@ -21,6 +21,6 @@ public class DiceController {
 
     @PostMapping("/play")
     public DicePlayResponse play(@Valid @RequestBody DicePlayRequest request) {
-        return diceService.play(request.getBetType(), request.getBetAmount());
+        return diceService.play(request.getPlayerId(), request.getBetType(), request.getBetAmount(), request.getItemId());
     }
 }

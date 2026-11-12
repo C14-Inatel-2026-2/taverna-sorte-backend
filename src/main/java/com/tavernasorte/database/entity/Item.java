@@ -18,7 +18,7 @@ public class Item {
     @Column(name = "price")
     private int price;
     @Column(name = "multiplier")
-    private int multiplier;
+    private int multiplier = 1;
     @Column(name = "description")
     private String description;
 

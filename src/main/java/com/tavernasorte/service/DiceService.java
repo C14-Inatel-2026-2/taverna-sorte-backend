@@ -1,33 +1,66 @@
 package com.tavernasorte.service;
 
+import com.tavernasorte.database.entity.Item;
+import com.tavernasorte.database.entity.Player;
+import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.dto.DicePlayResponse;
+import com.tavernasorte.exception.InvalidBetException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.model.BetType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DiceService {
 
     private final DiceRoller diceRoller;
+    private final PlayerRepository playerRepository;
 
-    public DiceService(DiceRoller diceRoller) {
+    public DiceService(DiceRoller diceRoller, PlayerRepository playerRepository) {
         this.diceRoller = diceRoller;
+        this.playerRepository = playerRepository;
     }
 
-    public DicePlayResponse play(BetType betType, double betAmount) {
-        if (betType == null) {
-            throw new IllegalArgumentException("O tipo de aposta deve ser LOW, SEVEN ou HIGH");
+    @Transactional
+    public DicePlayResponse play(Long playerId, BetType betType, int betAmount, Long itemId) {
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(PlayerNotFoundException::new);
+
+        Item selectedItem = null;
+        if (itemId != null) {
+            selectedItem = player.getInventory().getItems().stream()
+                    .filter(item -> itemId.equals(item.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidBetException("O item escolhido não pertence ao inventário do jogador"));
         }
-        if (!Double.isFinite(betAmount) || betAmount <= 0) {
-            throw new IllegalArgumentException("O valor da aposta deve ser maior que zero e finito");
+
+        int itemMultiplier = selectedItem == null ? 1 : selectedItem.getMultiplier();
+
+        int winningPrize = calculateWinningPrize(betType, betAmount, itemMultiplier);
+        if (player.getBalance() - betAmount + winningPrize > Player.MAX_BALANCE) {
+            throw new InvalidBetException("O prêmio máximo desta aposta ultrapassaria o saldo máximo de 1000000 moedas");
+        }
+
+        if (!player.debit(betAmount)) {
+            throw new InvalidBetException("Saldo insuficiente para a aposta");
+        }
+
+        if (selectedItem != null) {
+            // Consome uma unidade do inventário; o produto continua no catálogo.
+            player.getInventory().removeItem(selectedItem);
         }
 
         int die1 = diceRoller.roll();
         int die2 = diceRoller.roll();
         int sum = die1 + die2;
         boolean won = isWinningBet(betType, sum);
-        double prize = calculatePrize(betType, betAmount, won);
+        int prize = won ? winningPrize : 0;
+        if (prize > 0) {
+            player.addBalance(prize);
+        }
 
-        return new DicePlayResponse(die1, die2, sum, betType, won, prize);
+        return new DicePlayResponse(die1, die2, sum, betType, won, prize,
+                player.getBalance(), itemId, itemMultiplier);
     }
 
     private boolean isWinningBet(BetType betType, int sum) {
@@ -38,10 +71,8 @@ public class DiceService {
         };
     }
 
-    private double calculatePrize(BetType betType, double betAmount, boolean won) {
-        if (!won) {
-            return 0;
-        }
-        return betAmount * (betType == BetType.SEVEN ? 4 : 2);
+    private int calculateWinningPrize(BetType betType, int betAmount, int itemMultiplier) {
+        int gameMultiplier = betType == BetType.SEVEN ? 4 : 2;
+        return betAmount * gameMultiplier * itemMultiplier;
     }
 }
