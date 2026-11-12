@@ -15,7 +15,7 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
 - **RF01 — Autenticação de usuários (em desenvolvimento):** permitir que usuários cadastrados realizem login utilizando e-mail e senha. O sistema deve validar as credenciais e disponibilizar um token JWT para autenticação nas rotas protegidas.
 - **RF02 — Compra de itens (em desenvolvimento):** permitir que jogadores comprem itens na loja utilizando seu saldo de moedas, desde que possuam saldo suficiente e espaço disponível no inventário.
 - **RF03 — Baú Encantado (em desenvolvimento):** permitir que jogadores realizem apostas e recebam prêmios de acordo com as combinações de três símbolos sorteados.
-- **RF04 — Roleta:** permitir que jogadores participem do jogo de roleta e recebam o resultado da rodada.
+- **RF04 — Roleta:** sortear números de 0 a 36 e resolver apostas em número, vermelho ou preto no serviço. A integração da rodada com aposta pela API, saldo e histórico permanece pendente.
 - **RF05 — Histórico de partidas (em desenvolvimento):** registrar as partidas concluídas e permitir que jogadores consultem seu próprio histórico, incluindo jogo, valor apostado, resultado, prêmio recebido e data.
 
 #### Detalhamento das funcionalidades
@@ -317,11 +317,38 @@ mvn clean test
 |---|---|---|---|
 | Magic Numbers: `random.nextInt(10) + 1` não explicita o significado dos valores. | Replace Magic Number with Symbolic Constant: definir `MIN_RESULT`, `MAX_RESULT` e derivar `RESULT_COUNT` em `RouletteService`. | Tornar explícitos os limites e a quantidade de resultados, preservando o sorteio de 1 a 10. | Pendente: inserir a URL real deste PR. |
 
-Esta entrega contém um único refactoring, na branch `refactor/roulette-range-constants`. O contrato de `GET /roleta/girar`, o controller e os testes existentes foram preservados.
+O refactoring original foi isolado na branch `refactor/roulette-range-constants`, preservando o comportamento de 1 a 10. A implementação posterior da lógica europeia, descrita abaixo, é funcionalidade nova e altera o intervalo para 0 a 36.
 
 Validação local: `mvn clean package -DskipTests` e `mvn verify` passaram antes e depois, com **116 testes**, sem falhas, erros ou testes ignorados. Ambiente: JDK 25, compilando com `release 21`. Os logs locais estão em `target/roulette-refactor-evidence/` e são removidos por `mvn clean`.
 
 Para concluir a entrega, substituir o campo pendente pelo link real do PR e anexar ao PR as evidências das execuções verdes do Jenkins antes e depois, com Java 21. A execução no Jenkins ainda não foi confirmada.
+
+## Lógica da roleta europeia
+
+O serviço sorteia uniformemente um dos **37 números de 0 a 36**. O zero é verde; os demais possuem as cores fixas da roleta europeia, mapeadas em `RouletteColor`.
+
+| Tipo (`RouletteBetType`) | Escolha | Condição de vitória | Retorno total |
+|---|---|---|---|
+| `NUMBER` | Número de 0 a 36 | Número escolhido igual ao sorteado | 36 vezes a aposta |
+| `RED` | Sem número (`null`) | Número sorteado vermelho | 2 vezes a aposta |
+| `BLACK` | Sem número (`null`) | Número sorteado preto | 2 vezes a aposta |
+
+O retorno inclui a aposta original: apostar 10 em um número e acertar retorna 360 (350 de lucro); acertar uma cor retorna 20 (10 de lucro). Uma derrota retorna `0.00`. O zero perde nas apostas em vermelho ou preto; pode vencer quando escolhido explicitamente em `NUMBER`. Não há aposta em verde nem regras especiais de devolução no zero.
+
+`RouletteBet` valida tipo, escolha e valor antes de qualquer sorteio. O valor deve ser obrigatório, positivo, de até `10000.00` unidades da moeda do jogo e ter no máximo duas casas decimais. Valores usam `BigDecimal` e são normalizados para duas casas, sem arredondamento. Apostas em cor rejeitam um número informado.
+
+Exemplos de chamada interna ao serviço:
+
+```java
+service.play(RouletteBetType.NUMBER, 0, new BigDecimal("10.00"));
+service.play(RouletteBetType.RED, null, new BigDecimal("10.00"));
+```
+
+`RoulettePlayResponse` retorna a aposta validada (`bet`), o número sorteado (`drawnNumber`), a cor (`color`), a vitória (`won`) e o retorno total (`prize`). Não usa `@JsonProperty`. A operação anterior `play(int)` foi substituída por essa operação completa.
+
+O controller permanece com `GET /roleta/girar`, retornando apenas o número; seu intervalo agora é **0 a 36**, o que exige ajuste de consumidores que assumam 1 a 10. A rodada com aposta ainda não é exposta pela API. Saldo, autenticação do jogador, histórico e frontend ficam para a próxima integração.
+
+Validação local desta implementação: `mvn clean package -DskipTests` e `mvn verify` passaram antes (**120 testes**) e depois (**176 testes**), sem falhas, erros ou testes ignorados. São **64 casos da roleta** (incluindo os 37 números da tabela de cores) e 112 dos demais módulos, cujos testes não foram alterados. Ambiente: JDK 25 com `release 21`; Jenkins com Java 21 continua pendente. Logs em `target/roulette-european-evidence/`, removidos por `mvn clean`.
 
 ## Equipe
 

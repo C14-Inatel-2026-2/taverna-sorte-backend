@@ -1,15 +1,16 @@
 package com.tavernasorte.service;
 
+import com.tavernasorte.dto.RoulettePlayResponse;
+import com.tavernasorte.model.RouletteBet;
+import com.tavernasorte.model.RouletteBetType;
+import com.tavernasorte.model.RouletteColor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Random;
 
 @Service
 public class RouletteService {
-
-    private static final int MIN_RESULT = 1;
-    private static final int MAX_RESULT = 10;
-    private static final int RESULT_COUNT = MAX_RESULT - MIN_RESULT + 1;
 
     private final Random random;
 
@@ -22,6 +23,13 @@ public class RouletteService {
     }
 
     public int spin() {
-        return random.nextInt(RESULT_COUNT) + MIN_RESULT;
+        return random.nextInt(RouletteColor.NUMBER_COUNT) + RouletteColor.MIN_NUMBER;
+    }
+
+    public RoulettePlayResponse play(RouletteBetType type, Integer chosenNumber, BigDecimal amount) {
+        RouletteBet bet = new RouletteBet(type, chosenNumber, amount);
+        int drawnNumber = spin();
+        return new RoulettePlayResponse(bet, drawnNumber, RouletteColor.fromNumber(drawnNumber),
+                bet.wins(drawnNumber), bet.prizeFor(drawnNumber));
     }
 }
