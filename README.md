@@ -318,6 +318,60 @@ mvn clean test
 
 ---
 
+## Roleta europeia — lógica da rodada
+
+A roleta sorteia um número de **0 a 36**. O zero é verde; os demais números
+seguem a tabela fixa de cores da roleta europeia. Apostas e prêmios são moedas
+inteiras (`int`), assim como o saldo de `Player`.
+
+| Tipo de aposta | Escolha | Retorno total em caso de acerto |
+|---|---|---|
+| `NUMBER` | Número de 0 a 36 | 36 vezes a aposta |
+| `RED` | Cor vermelha, sem número | 2 vezes a aposta |
+| `BLACK` | Cor preta, sem número | 2 vezes a aposta |
+
+O retorno inclui as moedas apostadas: uma aposta de 10 em número retorna 360
+ao acertar; em cor, retorna 20. Derrotas retornam zero. O zero perde em vermelho
+e preto, mas vence quando escolhido numa aposta `NUMBER`.
+
+O fluxo fica em `RouletteService`: **validar → sortear → verificar vitória →
+calcular retorno → responder**. `RouletteBetType` guarda os três tipos e seus
+multiplicadores. `RoulettePlayResponse` é um record com os dados da aposta,
+número sorteado, cor, vitória e prêmio, sem `@JsonProperty`.
+
+```java
+service.play(RouletteBetType.NUMBER, 7, 10);
+service.play(RouletteBetType.RED, null, 10);
+```
+
+A aposta deve ser positiva. `NUMBER` exige um número válido; apostas em cor
+exigem `chosenNumber` nulo. Todas as validações ocorrem antes do sorteio.
+`Math.multiplyExact` verifica se o prêmio potencial cabe em `int`; apostas
+que causariam overflow são rejeitadas mesmo que pudessem perder a rodada.
+Esse é um limite técnico, sem um teto adicional de negócio.
+
+O controller mantém apenas `GET /roleta/girar`, cujo intervalo muda de 1–10
+para **0–36**. Consumidores da rota precisam considerar esse novo intervalo.
+A rodada com aposta ainda é chamada internamente pelo serviço. API de apostas,
+movimentação de saldo, autenticação, histórico e frontend ficam para outra entrega.
+
+Validação local: `mvn clean verify` passou antes (**121 testes**) e depois
+(**143 testes**, sendo 26 da roleta), sem falhas, erros ou testes ignorados.
+Ambiente: JDK 25, compilando com `release 21`. A execução no Jenkins com Java 21
+ainda precisa ser confirmada. Logs locais em `target/roulette-integer-evidence/`,
+removidos por `mvn clean`.
+
+## Refactorings
+
+| Smell | Refactoring aplicado | Por quê | Link do PR |
+|---|---|---|---|
+| Magic Numbers no sorteio | Replace Magic Number with Symbolic Constant: `MIN_NUMBER`, `MAX_NUMBER` e `NUMBER_COUNT` | Nomear os limites e derivar a quantidade de resultados. A mudança para 0–36 é funcionalidade nova, separada dessa melhoria de clareza. | Pendente: inserir o link do novo PR. |
+| Construção repetida do serviço com mock nos testes | Extract Method: `setUp()` com `@BeforeEach` | Centralizar a preparação e manter cada teste isolado. | Pendente: inserir o link do novo PR. |
+
+Os refactorings e testes se limitam à roleta. Para a entrega, substituir os
+links pendentes e anexar ao PR as evidências da pipeline verde antes e depois;
+a validação local não substitui essas execuções do Jenkins.
+
 ## Equipe
 
 - [David Fernandes Barbon](https://github.com/DavidFBar)
