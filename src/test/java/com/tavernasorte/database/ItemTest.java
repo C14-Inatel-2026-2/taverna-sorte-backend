@@ -36,8 +36,8 @@ public class ItemTest {
     @Test
     void shouldSetMultiplier(){
         Item item = new Item();
-        item.setMultiplier(2.0);
-        assertEquals(2.0,item.getMultiplier());
+        item.setMultiplier(2);
+        assertEquals(2,item.getMultiplier());
     }
 
     @Test
