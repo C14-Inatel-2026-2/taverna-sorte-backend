@@ -1,31 +1,30 @@
 package com.tavernasorte.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.BetType;
 
 public class DicePlayResponse {
 
-    @JsonProperty("dado1")
     private final int die1;
-    @JsonProperty("dado2")
     private final int die2;
-    @JsonProperty("soma")
     private final int sum;
-    @JsonProperty("tipoAposta")
     private final BetType betType;
-    @JsonProperty("venceu")
     private final boolean won;
-    @JsonProperty("premio")
-    private final double prize;
+    private final int prize;
+    private final int balance;
+    private final Long consumedItemId;
+    private final int itemMultiplier;
 
     public DicePlayResponse(int die1, int die2, int sum, BetType betType,
-                            boolean won, double prize) {
+                            boolean won, int prize, int balance, Long consumedItemId, int itemMultiplier) {
         this.die1 = die1;
         this.die2 = die2;
         this.sum = sum;
         this.betType = betType;
         this.won = won;
         this.prize = prize;
+        this.balance = balance;
+        this.consumedItemId = consumedItemId;
+        this.itemMultiplier = itemMultiplier;
     }
 
     public int getDie1() {
@@ -48,7 +47,19 @@ public class DicePlayResponse {
         return won;
     }
 
-    public double getPrize() {
+    public int getPrize() {
         return prize;
+    }
+
+    public int getBalance() {
+        return balance;
+    }
+
+    public Long getConsumedItemId() {
+        return consumedItemId;
+    }
+
+    public int getItemMultiplier() {
+        return itemMultiplier;
     }
 }

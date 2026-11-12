@@ -1,25 +1,45 @@
 package com.tavernasorte.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.tavernasorte.model.BetType;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public class DicePlayRequest {
 
+    @NotNull(message = "O jogador é obrigatório")
+    @Positive(message = "O identificador do jogador deve ser positivo")
+    private Long playerId;
 
-    @JsonProperty("tipoAposta")
+    @NotNull(message = "O tipo de aposta deve ser LOW, SEVEN ou HIGH")
     private BetType betType;
 
-    @Positive(message = "O valor da aposta deve ser maior que zero")
-    @JsonProperty("valorAposta")
-    private double betAmount;
+    @NotNull(message = "O valor da aposta é obrigatório")
+    @Min(value = 1, message = "A aposta mínima é 1 moeda")
+    @Max(value = 10000, message = "A aposta máxima é 10000 moedas")
+    private Integer betAmount;
+
+    @Positive(message = "O identificador do item deve ser positivo")
+    private Long itemId;
 
     public DicePlayRequest() {
     }
 
-    public DicePlayRequest(BetType betType, double betAmount) {
+    public DicePlayRequest(Long playerId, BetType betType, Integer betAmount, Long itemId) {
+        this.playerId = playerId;
         this.betType = betType;
         this.betAmount = betAmount;
+        this.itemId = itemId;
+    }
+
+    public Long getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(Long playerId) {
+        this.playerId = playerId;
     }
 
     public BetType getBetType() {
@@ -30,11 +50,20 @@ public class DicePlayRequest {
         this.betType = betType;
     }
 
-    public double getBetAmount() {
+    public Integer getBetAmount() {
         return betAmount;
     }
 
-    public void setBetAmount(double betAmount) {
+    public void setBetAmount(Integer betAmount) {
         this.betAmount = betAmount;
     }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
 }
