@@ -11,10 +11,13 @@ public class EnchantedChestResponse {
     private final List<Symbol> symbols;
     @JsonProperty("premio")
     private final int prize;
+    @JsonProperty("saldo")
+    private final int balance;
 
-    public EnchantedChestResponse(List<Symbol> symbols, int prize) {
+    public EnchantedChestResponse(List<Symbol> symbols, int prize, int balance) {
         this.symbols = List.copyOf(symbols);
         this.prize = prize;
+        this.balance = balance;
     }
 
     public List<Symbol> getSymbols() {
@@ -23,5 +26,9 @@ public class EnchantedChestResponse {
 
     public int getPrize() {
         return prize;
+    }
+
+    public int getBalance() {
+        return balance;
     }
 }

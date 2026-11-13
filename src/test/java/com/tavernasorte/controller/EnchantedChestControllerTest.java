@@ -3,8 +3,10 @@ package com.tavernasorte.controller;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.tavernasorte.dto.EnchantedChestResponse;
 import com.tavernasorte.exception.GlobalExceptionHandler;
-import com.tavernasorte.model.Symbol;
+import com.tavernasorte.exception.InvalidBetException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.model.ChestBetValue;
+import com.tavernasorte.model.Symbol;
 import com.tavernasorte.service.EnchantedChestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EnchantedChestControllerTest {
 
     private static final String ROUTE = "/bau/abrir";
+    private static final Long PLAYER_ID = 1L;
     private static final int BET_AMOUNT = 10;
 
     @Mock
@@ -56,21 +59,69 @@ class EnchantedChestControllerTest {
     }
 
     @Test
-    void shouldOpenChestWithValidBetAmount() throws Exception {
+    void shouldOpenChestForPlayer() throws Exception {
         EnchantedChestResponse result = new EnchantedChestResponse(
-                List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), 200);
-        when(enchantedChestService.open(BET_AMOUNT)).thenReturn(result);
+                List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), 200, 1190);
+        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT)).thenReturn(result);
 
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"valorAposta":10}
+                                {"jogadorId":1,"valorAposta":10}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("DRAGAO", "DRAGAO", "DRAGAO")))
-                .andExpect(jsonPath("$.premio").value(200));
+                .andExpect(jsonPath("$.premio").value(200))
+                .andExpect(jsonPath("$.saldo").value(1190));
 
-        verify(enchantedChestService).open(BET_AMOUNT);
+        verify(enchantedChestService).open(PLAYER_ID, BET_AMOUNT);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"valorAposta":10}
+            """,
+            """
+            {"jogadorId":null,"valorAposta":10}
+            """
+    })
+    void shouldRejectMissingPlayerWithoutCallingService(String body) throws Exception {
+        mockMvc.perform(post(ROUTE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(EnchantedChestService.MISSING_PLAYER));
+
+        verifyNoInteractions(enchantedChestService);
+    }
+
+    @Test
+    void shouldReturnNotFoundForUnknownPlayer() throws Exception {
+        when(enchantedChestService.open(99L, BET_AMOUNT))
+                .thenThrow(new PlayerNotFoundException());
+
+        mockMvc.perform(post(ROUTE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"jogadorId":99,"valorAposta":10}
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
+    }
+
+    @Test
+    void shouldReturnBadRequestForInsufficientBalance() throws Exception {
+        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT))
+                .thenThrow(new InvalidBetException(EnchantedChestService.INSUFFICIENT_BALANCE));
+
+        mockMvc.perform(post(ROUTE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"jogadorId":1,"valorAposta":10}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(EnchantedChestService.INSUFFICIENT_BALANCE));
     }
 
     @ParameterizedTest
@@ -79,7 +130,7 @@ class EnchantedChestControllerTest {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"valorAposta":%s}
+                                {"jogadorId":1,"valorAposta":%s}
                                 """.formatted(value)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("O valor da aposta deve ser maior que zero"));
@@ -89,9 +140,11 @@ class EnchantedChestControllerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{}",
             """
-            {"valorAposta":null}
+            {"jogadorId":1}
+            """,
+            """
+            {"jogadorId":1,"valorAposta":null}
             """
     })
     void shouldRejectMissingAmountWithoutCallingService(String body) throws Exception {
@@ -110,7 +163,7 @@ class EnchantedChestControllerTest {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"valorAposta":%s}
+                                {"jogadorId":1,"valorAposta":%s}
                                 """.formatted(value)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_MAXIMUM_VALUE));
@@ -124,7 +177,7 @@ class EnchantedChestControllerTest {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"valorAposta":%s}
+                                {"jogadorId":1,"valorAposta":%s}
                                 """.formatted(value)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Valor inválido na requisição"));
@@ -135,18 +188,37 @@ class EnchantedChestControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {
             """
-            {"valorAposta":"abc"}
+            {"jogadorId":1.5,"valorAposta":10}
+            """,
+            """
+            {"jogadorId":"abc","valorAposta":10}
+            """
+    })
+    void shouldRejectNonIntegerPlayerIdWithoutCallingService(String body) throws Exception {
+        mockMvc.perform(post(ROUTE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Valor inválido na requisição"));
+
+        verifyNoInteractions(enchantedChestService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"jogadorId":1,"valorAposta":"abc"}
             """,
             "{valorAposta:",
             "",
             """
-            {"valorAposta":"NaN"}
+            {"jogadorId":1,"valorAposta":"NaN"}
             """,
             """
-            {"valorAposta":"Infinity"}
+            {"jogadorId":1,"valorAposta":"Infinity"}
             """,
             """
-            {"valorAposta":NaN}
+            {"jogadorId":1,"valorAposta":NaN}
             """
     })
     void shouldRejectUnreadableBodyWithoutCallingService(String body) throws Exception {
@@ -162,16 +234,16 @@ class EnchantedChestControllerTest {
     @ParameterizedTest
     @ValueSource(strings = {
             """
-            {"valorApostaa":10}
+            {"jogadorId":1,"valorApostaa":10}
             """,
             """
-            {"valor":10}
+            {"jogadorId":1,"valor":10}
             """,
             """
-            {"valorAposta":10,"extra":true}
+            {"jogadorId":1,"valorAposta":10,"extra":true}
             """,
             """
-            {"extra":1}
+            {"playerId":1,"valorAposta":10}
             """
     })
     void shouldRejectUnknownFieldWithoutCallingService(String body) throws Exception {
