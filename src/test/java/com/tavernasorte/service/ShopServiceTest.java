@@ -4,6 +4,12 @@ import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.ItemRepository;
 import com.tavernasorte.database.repository.PlayerRepository;
+import com.tavernasorte.exception.InsufficientBalanceException;
+import com.tavernasorte.exception.InvalidItemException;
+import com.tavernasorte.exception.InvalidPlayerException;
+import com.tavernasorte.exception.InventoryFullException;
+import com.tavernasorte.exception.ItemNotFoundException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -40,7 +46,7 @@ class ShopServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertTrue(shopService.buyItem(1L, 1L));
+        assertDoesNotThrow(() -> shopService.buyItem(1L, 1L));
     }
 
     @Test
@@ -87,14 +93,14 @@ class ShopServiceTest {
     void shouldRejectPurchaseWithNullPlayerId() {
         shopService = new ShopService(itemRepository, playerRepository);
 
-        assertFalse(shopService.buyItem(null, 1L));
+        assertThrows(InvalidPlayerException.class, () -> shopService.buyItem(null, 1L));
     }
 
     @Test
     void shouldRejectPurchaseWithNullItemId() {
         shopService = new ShopService(itemRepository, playerRepository);
 
-        assertFalse(shopService.buyItem(1L, null));
+        assertThrows(InvalidItemException.class, () -> shopService.buyItem(1L, null));
     }
 
     @Test
@@ -103,7 +109,7 @@ class ShopServiceTest {
         Player player = new Player();
         player.addBalance(100);
 
-        shopService.buyItem(1L, null);
+        assertThrows(InvalidItemException.class, () -> shopService.buyItem(1L, null));
 
         assertEquals(100, player.getBalance());
     }
@@ -115,7 +121,7 @@ class ShopServiceTest {
         when(playerRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        assertFalse(shopService.buyItem(99L, 1L));
+        assertThrows(PlayerNotFoundException.class, () -> shopService.buyItem(99L, 1L));
     }
 
     @Test
@@ -130,7 +136,7 @@ class ShopServiceTest {
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        assertFalse(shopService.buyItem(1L, 99L));
+        assertThrows(ItemNotFoundException.class, () -> shopService.buyItem(1L, 99L));
     }
 
     @Test
@@ -145,7 +151,7 @@ class ShopServiceTest {
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        shopService.buyItem(1L, 99L);
+        assertThrows(ItemNotFoundException.class, () -> shopService.buyItem(1L, 99L));
 
         assertEquals(100, player.getBalance());
     }
@@ -162,7 +168,7 @@ class ShopServiceTest {
         when(itemRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        shopService.buyItem(1L, 99L);
+        assertThrows(ItemNotFoundException.class, () -> shopService.buyItem(1L, 99L));
 
         assertTrue(player.getInventory().getItems().isEmpty());
     }
@@ -182,7 +188,7 @@ class ShopServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertFalse(shopService.buyItem(1L, 1L));
+        assertThrows(InsufficientBalanceException.class, () -> shopService.buyItem(1L, 1L));
     }
 
     @Test
@@ -200,7 +206,7 @@ class ShopServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        shopService.buyItem(1L, 1L);
+        assertThrows(InsufficientBalanceException.class, () -> shopService.buyItem(1L, 1L));
 
         assertEquals(20, player.getBalance());
     }
@@ -220,7 +226,7 @@ class ShopServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        shopService.buyItem(1L, 1L);
+        assertThrows(InsufficientBalanceException.class, () -> shopService.buyItem(1L, 1L));
 
         assertTrue(player.getInventory().getItems().isEmpty());
     }
@@ -244,7 +250,7 @@ class ShopServiceTest {
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        assertFalse(shopService.buyItem(1L, 4L));
+        assertThrows(InventoryFullException.class, () -> shopService.buyItem(1L, 4L));
     }
 
     @Test
@@ -266,7 +272,7 @@ class ShopServiceTest {
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        shopService.buyItem(1L, 4L);
+        assertThrows(InventoryFullException.class, () -> shopService.buyItem(1L, 4L));
 
         assertEquals(100, player.getBalance());
     }
@@ -290,7 +296,7 @@ class ShopServiceTest {
         when(itemRepository.findById(4L))
                 .thenReturn(Optional.of(item));
 
-        shopService.buyItem(1L, 4L);
+        assertThrows(InventoryFullException.class, () -> shopService.buyItem(1L, 4L));
 
         assertEquals(3, player.getInventory().getItems().size());
     }
@@ -310,7 +316,7 @@ class ShopServiceTest {
         when(itemRepository.findById(1L))
                 .thenReturn(Optional.of(item));
 
-        assertTrue(shopService.buyItem(1L, 1L));
+        assertDoesNotThrow(() -> shopService.buyItem(1L, 1L));
     }
 
     @Test

@@ -3,7 +3,9 @@ package com.tavernasorte.service;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.dto.PlayerResponse;
-import com.tavernasorte.exception.InvalidBetException;
+import com.tavernasorte.exception.DanceNotAllowedException;
+import com.tavernasorte.exception.InvalidPlayerException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,12 +38,10 @@ class PlayerServiceTest {
     }
 
     @Test
-    void shouldReturnNullWhenPlayerDoesNotExist() {
+    void shouldRejectLookupWhenPlayerDoesNotExist() {
         when(playerRepository.findById(1L)).thenReturn(Optional.empty());
 
-        PlayerResponse response = playerService.findById(1L);
-
-        assertNull(response);
+        assertThrows(PlayerNotFoundException.class, () -> playerService.findById(1L));
     }
 
     @Test
@@ -57,31 +57,29 @@ class PlayerServiceTest {
     }
 
     @Test
-    void shouldReturnFalseWhenPlayerIdIsNull() {
-        boolean result = playerService.danceForGnome(null);
+    void shouldRejectDanceWhenPlayerIdIsNull() {
+        assertThrows(InvalidPlayerException.class, () -> playerService.danceForGnome(null));
 
-        assertFalse(result);
+        verifyNoInteractions(playerRepository);
     }
 
     @Test
-    void shouldReturnFalseWhenPlayerDoesNotExist() {
+    void shouldRejectDanceWhenPlayerDoesNotExist() {
         when(playerRepository.findById(1L)).thenReturn(Optional.empty());
 
-        boolean result = playerService.danceForGnome(1L);
-
-        assertFalse(result);
+        assertThrows(PlayerNotFoundException.class, () -> playerService.danceForGnome(1L));
     }
 
     @Test
-    void shouldReturnFalseWhenPlayerHasBalance() {
+    void shouldRejectDanceWhenPlayerHasBalance() {
         Player player = new Player("Chris Careca");
         player.addBalance(50);
 
         when(playerRepository.findById(1L)).thenReturn(Optional.of(player));
 
-        boolean result = playerService.danceForGnome(1L);
+        assertThrows(DanceNotAllowedException.class, () -> playerService.danceForGnome(1L));
 
-        assertFalse(result);
+        assertEquals(50, player.getBalance());
     }
 
     @Test
