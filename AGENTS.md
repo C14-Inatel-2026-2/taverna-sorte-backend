@@ -58,8 +58,8 @@ contratos da API, pipeline e deploy estão descritos no `README.md`.
     e cálculos;
   - controller: `MockMvc` com `standaloneSetup` e serviço mockado; verifica
     status, campos JSON e mensagens de erro;
-  - fluxo: controller e serviço reais, só o sorteio mockado; verifica a
-    integração entre as camadas. Não cobre banco nem servidor real.
+  - fluxo: controller e serviço reais, com sorteio e repositórios mockados;
+    verifica a integração entre as camadas. Não cobre banco nem servidor real.
 
   Os testes `EnchantedChest*Test` são o exemplo completo desse padrão.
 
