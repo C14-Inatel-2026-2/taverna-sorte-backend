@@ -3,34 +3,30 @@ package com.tavernasorte.dto;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.ChestBetValue;
-import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-
-import java.math.BigDecimal;
 
 public class EnchantedChestRequest {
 
     @JsonProperty("valorAposta")
     @NotNull(message = "O valor da aposta é obrigatório")
     @Positive(message = "O valor da aposta deve ser maior que zero")
-    @Digits(integer = ChestBetValue.INTEGER_DIGITS,
-            fraction = ChestBetValue.DECIMAL_PLACES,
-            message = ChestBetValue.INVALID_FORMAT)
-    private BigDecimal betAmount;
+    @Max(value = ChestBetValue.MAXIMUM, message = ChestBetValue.INVALID_MAXIMUM_VALUE)
+    private Integer betAmount;
 
     public EnchantedChestRequest() {
     }
 
-    public EnchantedChestRequest(BigDecimal betAmount) {
+    public EnchantedChestRequest(Integer betAmount) {
         this.betAmount = betAmount;
     }
 
-    public BigDecimal getBetAmount() {
+    public Integer getBetAmount() {
         return betAmount;
     }
 
-    public void setBetAmount(BigDecimal betAmount) {
+    public void setBetAmount(Integer betAmount) {
         this.betAmount = betAmount;
     }
 

@@ -1,11 +1,10 @@
 package com.tavernasorte.service;
 
 import com.tavernasorte.dto.EnchantedChestResponse;
-import com.tavernasorte.model.Symbol;
 import com.tavernasorte.model.ChestBetValue;
+import com.tavernasorte.model.Symbol;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +20,7 @@ public class EnchantedChestService {
         this.symbolPicker = symbolPicker;
     }
 
-    public EnchantedChestResponse open(BigDecimal betAmount) {
+    public EnchantedChestResponse open(Integer betAmount) {
         ChestBetValue bet = new ChestBetValue(betAmount);
 
         List<Symbol> symbols = new ArrayList<>();
@@ -32,15 +31,15 @@ public class EnchantedChestService {
         return new EnchantedChestResponse(symbols, calculatePrize(symbols, bet));
     }
 
-    private BigDecimal calculatePrize(List<Symbol> symbols, ChestBetValue bet) {
+    private int calculatePrize(List<Symbol> symbols, ChestBetValue bet) {
         int distinctSymbolCount = new HashSet<>(symbols).size();
 
         if (distinctSymbolCount == 1) {
-            return bet.value().multiply(BigDecimal.valueOf(symbols.get(0).getMultiplier()));
+            return bet.value() * symbols.get(0).getMultiplier();
         }
         if (distinctSymbolCount == 2) {
             return bet.value(); // par de símbolos iguais devolve a aposta
         }
-        return BigDecimal.ZERO.setScale(ChestBetValue.DECIMAL_PLACES);
+        return 0;
     }
 }

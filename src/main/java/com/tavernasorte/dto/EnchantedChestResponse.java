@@ -3,7 +3,6 @@ package com.tavernasorte.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.Symbol;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class EnchantedChestResponse {
@@ -11,9 +10,9 @@ public class EnchantedChestResponse {
     @JsonProperty("simbolos")
     private final List<Symbol> symbols;
     @JsonProperty("premio")
-    private final BigDecimal prize;
+    private final int prize;
 
-    public EnchantedChestResponse(List<Symbol> symbols, BigDecimal prize) {
+    public EnchantedChestResponse(List<Symbol> symbols, int prize) {
         this.symbols = List.copyOf(symbols);
         this.prize = prize;
     }
@@ -22,7 +21,7 @@ public class EnchantedChestResponse {
         return symbols;
     }
 
-    public BigDecimal getPrize() {
+    public int getPrize() {
         return prize;
     }
 }

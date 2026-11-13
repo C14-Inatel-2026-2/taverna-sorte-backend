@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -38,45 +37,45 @@ class EnchantedChestServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"COIN,30.00", "POTION,50.00", "SWORD,80.00", "CROWN,120.00", "DRAGON,200.00"})
-    void shouldPaySymbolMultiplierForThreeMatchingSymbols(Symbol symbol, String expectedPrize) {
+    @CsvSource({"COIN,30", "POTION,50", "SWORD,80", "CROWN,120", "DRAGON,200"})
+    void shouldPaySymbolMultiplierForThreeMatchingSymbols(Symbol symbol, int expectedPrize) {
         when(symbolPicker.pick()).thenReturn(symbol, symbol, symbol);
 
-        EnchantedChestResponse result = service.open(new BigDecimal("10.00"));
+        EnchantedChestResponse result = service.open(10);
 
         assertAll("resultado do baú",
                 () -> assertEquals(List.of(symbol, symbol, symbol), result.getSymbols()),
-                () -> assertEquals(new BigDecimal(expectedPrize), result.getPrize())
+                () -> assertEquals(expectedPrize, result.getPrize())
         );
         verify(symbolPicker, times(3)).pick();
     }
 
     @Test
-    void shouldReturnBetWithTwoDecimalPlacesForOnePair() {
+    void shouldReturnBetForOnePair() {
         when(symbolPicker.pick()).thenReturn(Symbol.CROWN, Symbol.CROWN, Symbol.SWORD);
 
-        EnchantedChestResponse result = service.open(new BigDecimal("10.0"));
+        EnchantedChestResponse result = service.open(10);
 
-        assertEquals(new BigDecimal("10.00"), result.getPrize());
+        assertEquals(10, result.getPrize());
     }
 
     @Test
     void shouldPayNothingForThreeDifferentSymbols() {
         when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        EnchantedChestResponse result = service.open(new BigDecimal("10.00"));
+        EnchantedChestResponse result = service.open(10);
 
-        assertEquals(new BigDecimal("0.00"), result.getPrize());
+        assertEquals(0, result.getPrize());
     }
 
     @ParameterizedTest
-    @CsvSource({"0.1,0.30", "0.01,0.03", "1,3.00", "1.0,3.00", "1.00,3.00"})
-    void shouldCalculateExactDecimalPrize(String value, String expectedPrize) {
+    @CsvSource({"1,3", "7,21", "333,999"})
+    void shouldPayWholeCoinsForAnyValidBet(int bet, int expectedPrize) {
         when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
-        EnchantedChestResponse result = service.open(new BigDecimal(value));
+        EnchantedChestResponse result = service.open(bet);
 
-        assertEquals(new BigDecimal(expectedPrize), result.getPrize());
+        assertEquals(expectedPrize, result.getPrize());
     }
 
     @Test
@@ -85,34 +84,24 @@ class EnchantedChestServiceTest {
 
         EnchantedChestResponse result = service.open(ChestBetValue.MAXIMUM);
 
-        assertEquals(new BigDecimal("200000.00"), result.getPrize());
+        assertEquals(200000, result.getPrize());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0", "-0.01", "-10"})
-    void shouldRejectNonPositiveAmountBeforePickingSymbols(String value) {
+    @ValueSource(ints = {0, -1, -10, Integer.MIN_VALUE})
+    void shouldRejectNonPositiveAmountBeforePickingSymbols(int value) {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(new BigDecimal(value)));
+                () -> service.open(value));
 
         assertEquals("O valor da aposta deve ser maior que zero", exception.getMessage());
         verifyNoInteractions(symbolPicker);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0.001", "10.000", "10000.001", "100000", "1000000000000.00", "1e308"})
-    void shouldRejectInvalidFormatBeforePickingSymbols(String value) {
+    @ValueSource(ints = {10001, 50000, Integer.MAX_VALUE})
+    void shouldRejectAmountAboveMaximumBeforePickingSymbols(int value) {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(new BigDecimal(value)));
-
-        assertEquals(ChestBetValue.INVALID_FORMAT, exception.getMessage());
-        verifyNoInteractions(symbolPicker);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"10000.01", "50000", "99999.99"})
-    void shouldRejectAmountAboveMaximumBeforePickingSymbols(String value) {
-        InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(new BigDecimal(value)));
+                () -> service.open(value));
 
         assertEquals(ChestBetValue.INVALID_MAXIMUM_VALUE, exception.getMessage());
         verifyNoInteractions(symbolPicker);

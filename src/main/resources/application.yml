@@ -13,3 +13,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+  jackson:
+    deserialization:
+      # Recusa 10.5 (ou 10.0) em campos inteiros em vez de truncar para 10.
+      accept-float-as-int: false
