@@ -1,6 +1,7 @@
 package com.tavernasorte.controller;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.exception.GlobalExceptionHandler;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -24,6 +26,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -63,22 +66,26 @@ class EnchantedChestFlowTest {
     }
 
     @Test
-    void shouldPlayAndUpdateBalance() throws Exception {
+    void shouldPlayWithItemAndUpdateBalance() throws Exception {
         Player player = givenPlayerWithBalance(1000);
+        Item item = new Item();
+        item.setMultiplier(2);
+        ReflectionTestUtils.setField(item, "id", 3L);
+        player.getInventory().addItem(item);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
         mockMvc.perform(post("/bau/abrir")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10}
+                                {"jogadorId":1,"valorAposta":10,"itemId":3}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("MOEDA", "MOEDA", "MOEDA")))
-                .andExpect(jsonPath("$.premio").value(30))
-                .andExpect(jsonPath("$.saldo").value(1020));
+                .andExpect(jsonPath("$.premio").value(60))
+                .andExpect(jsonPath("$.saldo").value(1050));
 
         verify(symbolPicker, times(3)).pick();
-        assertEquals(1020, player.getBalance());
+        assertTrue(player.getInventory().getItems().isEmpty());
     }
 
     @Test
@@ -125,6 +132,21 @@ class EnchantedChestFlowTest {
                                 """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
+
+        verifyNoInteractions(symbolPicker);
+    }
+
+    @Test
+    void shouldRejectItemOutsideInventoryBeforePickingSymbols() throws Exception {
+        givenPlayerWithBalance(1000);
+
+        mockMvc.perform(post("/bau/abrir")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"jogadorId":1,"valorAposta":10,"itemId":3}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(EnchantedChestService.ITEM_NOT_IN_INVENTORY));
 
         verifyNoInteractions(symbolPicker);
     }

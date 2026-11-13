@@ -1,5 +1,6 @@
 package com.tavernasorte.service;
 
+import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.dto.EnchantedChestResponse;
@@ -15,13 +16,16 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -31,6 +35,7 @@ import static org.mockito.Mockito.when;
 class EnchantedChestServiceTest {
 
     private static final Long PLAYER_ID = 1L;
+    private static final Long ITEM_ID = 3L;
     private static final int INITIAL_BALANCE = 1000;
 
     @Mock
@@ -54,7 +59,7 @@ class EnchantedChestServiceTest {
         givenPlayerWithBalance(INITIAL_BALANCE);
         when(symbolPicker.pick()).thenReturn(symbol, symbol, symbol);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertAll("resultado do baú",
                 () -> assertEquals(List.of(symbol, symbol, symbol), result.getSymbols()),
@@ -68,7 +73,7 @@ class EnchantedChestServiceTest {
         givenPlayerWithBalance(INITIAL_BALANCE);
         when(symbolPicker.pick()).thenReturn(Symbol.CROWN, Symbol.CROWN, Symbol.SWORD);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(10, result.getPrize());
     }
@@ -78,7 +83,7 @@ class EnchantedChestServiceTest {
         givenPlayerWithBalance(INITIAL_BALANCE);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(0, result.getPrize());
     }
@@ -88,7 +93,7 @@ class EnchantedChestServiceTest {
         givenPlayerWithBalance(ChestBetValue.MAXIMUM);
         when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, ChestBetValue.MAXIMUM);
+        EnchantedChestResponse result = service.open(PLAYER_ID, ChestBetValue.MAXIMUM, null);
 
         assertEquals(200000, result.getPrize());
     }
@@ -100,7 +105,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(INITIAL_BALANCE);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertAll("saldo após a jogada",
                 () -> assertEquals(1020, player.getBalance()),
@@ -113,7 +118,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(INITIAL_BALANCE);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(990, player.getBalance());
         assertEquals(990, result.getBalance());
@@ -124,7 +129,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(10);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        service.open(PLAYER_ID, 10);
+        service.open(PLAYER_ID, 10, null);
 
         assertEquals(0, player.getBalance());
     }
@@ -134,7 +139,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(9);
 
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(PLAYER_ID, 10));
+                () -> service.open(PLAYER_ID, 10, null));
 
         assertEquals(EnchantedChestService.INSUFFICIENT_BALANCE, exception.getMessage());
         assertEquals(9, player.getBalance());
@@ -147,7 +152,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(Player.MAX_BALANCE - 190);
         when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
-        EnchantedChestResponse result = service.open(PLAYER_ID, 10);
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(Player.MAX_BALANCE, player.getBalance());
         assertEquals(Player.MAX_BALANCE, result.getBalance());
@@ -160,7 +165,7 @@ class EnchantedChestServiceTest {
         Player player = givenPlayerWithBalance(balance);
 
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(PLAYER_ID, 10));
+                () -> service.open(PLAYER_ID, 10, null));
 
         assertEquals(EnchantedChestService.MAX_BALANCE_EXCEEDED, exception.getMessage());
         assertEquals(balance, player.getBalance());
@@ -168,9 +173,25 @@ class EnchantedChestServiceTest {
     }
 
     @Test
+    void shouldConsiderItemMultiplierInBalanceLimitBeforePickingSymbols() {
+        // sem item: 990000 - 10 + 200 cabe; com item x100: 990000 - 10 + 20000 não cabe
+        int balance = Player.MAX_BALANCE - 10000;
+        Player player = givenPlayerWithBalance(balance);
+        Item item = givenItemInInventory(player, ITEM_ID, 100);
+
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(PLAYER_ID, 10, ITEM_ID));
+
+        assertEquals(EnchantedChestService.MAX_BALANCE_EXCEEDED, exception.getMessage());
+        assertEquals(balance, player.getBalance());
+        assertTrue(player.getInventory().getItems().contains(item));
+        verifyNoInteractions(symbolPicker);
+    }
+
+    @Test
     void shouldRejectMissingPlayerBeforePickingSymbols() {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(null, 10));
+                () -> service.open(null, 10, null));
 
         assertEquals(EnchantedChestService.MISSING_PLAYER, exception.getMessage());
         verifyNoInteractions(symbolPicker, playerRepository);
@@ -181,8 +202,73 @@ class EnchantedChestServiceTest {
         when(playerRepository.findById(PLAYER_ID)).thenReturn(Optional.empty());
 
         assertThrows(PlayerNotFoundException.class,
-                () -> service.open(PLAYER_ID, 10));
+                () -> service.open(PLAYER_ID, 10, null));
 
+        verifyNoInteractions(symbolPicker);
+    }
+
+    // ---------- Item do inventário ----------
+
+    @Test
+    void shouldMultiplyPrizeByItemMultiplier() {
+        Player player = givenPlayerWithBalance(INITIAL_BALANCE);
+        givenItemInInventory(player, ITEM_ID, 2);
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN);
+
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, ITEM_ID);
+
+        assertAll("prêmio com item",
+                () -> assertEquals(60, result.getPrize()),
+                () -> assertEquals(1050, player.getBalance())
+        );
+    }
+
+    @Test
+    void shouldConsumeItemAfterUse() {
+        Player player = givenPlayerWithBalance(INITIAL_BALANCE);
+        Item item = givenItemInInventory(player, ITEM_ID, 2);
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN);
+
+        service.open(PLAYER_ID, 10, ITEM_ID);
+
+        assertFalse(player.getInventory().getItems().contains(item));
+    }
+
+    @Test
+    void shouldConsumeItemEvenWithoutPrize() {
+        Player player = givenPlayerWithBalance(INITIAL_BALANCE);
+        Item item = givenItemInInventory(player, ITEM_ID, 2);
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
+
+        EnchantedChestResponse result = service.open(PLAYER_ID, 10, ITEM_ID);
+
+        assertEquals(0, result.getPrize());
+        assertFalse(player.getInventory().getItems().contains(item));
+    }
+
+    @Test
+    void shouldKeepOtherItemsInInventory() {
+        Player player = givenPlayerWithBalance(INITIAL_BALANCE);
+        givenItemInInventory(player, ITEM_ID, 2);
+        Item otherItem = givenItemInInventory(player, 4L, 5);
+        when(symbolPicker.pick()).thenReturn(Symbol.COIN);
+
+        service.open(PLAYER_ID, 10, ITEM_ID);
+
+        assertEquals(List.of(otherItem), player.getInventory().getItems());
+    }
+
+    @Test
+    void shouldRejectItemOutsideInventoryBeforePickingSymbols() {
+        Player player = givenPlayerWithBalance(INITIAL_BALANCE);
+        givenItemInInventory(player, 4L, 5);
+
+        InvalidBetException exception = assertThrows(InvalidBetException.class,
+                () -> service.open(PLAYER_ID, 10, ITEM_ID));
+
+        assertEquals(EnchantedChestService.ITEM_NOT_IN_INVENTORY, exception.getMessage());
+        assertEquals(INITIAL_BALANCE, player.getBalance());
+        assertTrue(player.getInventory().getItems().stream().anyMatch(i -> i.getId().equals(4L)));
         verifyNoInteractions(symbolPicker);
     }
 
@@ -192,7 +278,7 @@ class EnchantedChestServiceTest {
     @ValueSource(ints = {0, -1, -10, Integer.MIN_VALUE})
     void shouldRejectNonPositiveAmountBeforePickingSymbols(int value) {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(PLAYER_ID, value));
+                () -> service.open(PLAYER_ID, value, null));
 
         assertEquals("O valor da aposta deve ser maior que zero", exception.getMessage());
         verifyNoInteractions(symbolPicker, playerRepository);
@@ -202,7 +288,7 @@ class EnchantedChestServiceTest {
     @ValueSource(ints = {10001, 50000, Integer.MAX_VALUE})
     void shouldRejectAmountAboveMaximumBeforePickingSymbols(int value) {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(PLAYER_ID, value));
+                () -> service.open(PLAYER_ID, value, null));
 
         assertEquals(ChestBetValue.INVALID_MAXIMUM_VALUE, exception.getMessage());
         verifyNoInteractions(symbolPicker, playerRepository);
@@ -211,7 +297,7 @@ class EnchantedChestServiceTest {
     @Test
     void shouldRejectMissingAmountBeforePickingSymbols() {
         InvalidBetException exception = assertThrows(InvalidBetException.class,
-                () -> service.open(PLAYER_ID, null));
+                () -> service.open(PLAYER_ID, null, null));
 
         assertEquals("O valor da aposta é obrigatório", exception.getMessage());
         verifyNoInteractions(symbolPicker, playerRepository);
@@ -224,5 +310,13 @@ class EnchantedChestServiceTest {
         player.addBalance(balance);
         when(playerRepository.findById(PLAYER_ID)).thenReturn(Optional.of(player));
         return player;
+    }
+
+    private Item givenItemInInventory(Player player, Long itemId, int multiplier) {
+        Item item = new Item();
+        item.setMultiplier(multiplier);
+        ReflectionTestUtils.setField(item, "id", itemId); // o id é gerado pelo banco e não tem setter
+        player.getInventory().addItem(item);
+        return item;
     }
 }

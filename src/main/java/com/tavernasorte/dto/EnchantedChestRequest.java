@@ -20,12 +20,17 @@ public class EnchantedChestRequest {
     @Max(value = ChestBetValue.MAXIMUM, message = ChestBetValue.INVALID_MAXIMUM_VALUE)
     private Integer betAmount;
 
+    /** Opcional: item do inventário do jogador que multiplica o prêmio. */
+    @JsonProperty("itemId")
+    private Long itemId;
+
     public EnchantedChestRequest() {
     }
 
-    public EnchantedChestRequest(Long playerId, Integer betAmount) {
+    public EnchantedChestRequest(Long playerId, Integer betAmount, Long itemId) {
         this.playerId = playerId;
         this.betAmount = betAmount;
+        this.itemId = itemId;
     }
 
     public Long getPlayerId() {
@@ -42,6 +47,14 @@ public class EnchantedChestRequest {
 
     public void setBetAmount(Integer betAmount) {
         this.betAmount = betAmount;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
     }
 
     /** Torna o corpo estrito: qualquer campo fora do contrato rejeita a requisição. */

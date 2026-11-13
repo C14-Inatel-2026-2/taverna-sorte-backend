@@ -36,6 +36,7 @@ class EnchantedChestControllerTest {
 
     private static final String ROUTE = "/bau/abrir";
     private static final Long PLAYER_ID = 1L;
+    private static final Long ITEM_ID = 3L;
     private static final int BET_AMOUNT = 10;
 
     @Mock
@@ -59,22 +60,46 @@ class EnchantedChestControllerTest {
     }
 
     @Test
-    void shouldOpenChestForPlayer() throws Exception {
+    void shouldOpenChestWithItem() throws Exception {
         EnchantedChestResponse result = new EnchantedChestResponse(
-                List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), 200, 1190);
-        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT)).thenReturn(result);
+                List.of(Symbol.DRAGON, Symbol.DRAGON, Symbol.DRAGON), 400, 1390);
+        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT, ITEM_ID)).thenReturn(result);
 
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10}
+                                {"jogadorId":1,"valorAposta":10,"itemId":3}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.simbolos").value(contains("DRAGAO", "DRAGAO", "DRAGAO")))
-                .andExpect(jsonPath("$.premio").value(200))
-                .andExpect(jsonPath("$.saldo").value(1190));
+                .andExpect(jsonPath("$.premio").value(400))
+                .andExpect(jsonPath("$.saldo").value(1390));
 
-        verify(enchantedChestService).open(PLAYER_ID, BET_AMOUNT);
+        verify(enchantedChestService).open(PLAYER_ID, BET_AMOUNT, ITEM_ID);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"jogadorId":1,"valorAposta":10}
+            """,
+            """
+            {"jogadorId":1,"valorAposta":10,"itemId":null}
+            """
+    })
+    void shouldOpenChestWithoutItem(String body) throws Exception {
+        EnchantedChestResponse result = new EnchantedChestResponse(
+                List.of(Symbol.COIN, Symbol.POTION, Symbol.SWORD), 0, 990);
+        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT, null)).thenReturn(result);
+
+        mockMvc.perform(post(ROUTE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.premio").value(0))
+                .andExpect(jsonPath("$.saldo").value(990));
+
+        verify(enchantedChestService).open(PLAYER_ID, BET_AMOUNT, null);
     }
 
     @ParameterizedTest
@@ -98,7 +123,7 @@ class EnchantedChestControllerTest {
 
     @Test
     void shouldReturnNotFoundForUnknownPlayer() throws Exception {
-        when(enchantedChestService.open(99L, BET_AMOUNT))
+        when(enchantedChestService.open(99L, BET_AMOUNT, null))
                 .thenThrow(new PlayerNotFoundException());
 
         mockMvc.perform(post(ROUTE)
@@ -112,7 +137,7 @@ class EnchantedChestControllerTest {
 
     @Test
     void shouldReturnBadRequestForInsufficientBalance() throws Exception {
-        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT))
+        when(enchantedChestService.open(PLAYER_ID, BET_AMOUNT, null))
                 .thenThrow(new InvalidBetException(EnchantedChestService.INSUFFICIENT_BALANCE));
 
         mockMvc.perform(post(ROUTE)
@@ -191,10 +216,13 @@ class EnchantedChestControllerTest {
             {"jogadorId":1.5,"valorAposta":10}
             """,
             """
+            {"jogadorId":1,"valorAposta":10,"itemId":3.5}
+            """,
+            """
             {"jogadorId":"abc","valorAposta":10}
             """
     })
-    void shouldRejectNonIntegerPlayerIdWithoutCallingService(String body) throws Exception {
+    void shouldRejectNonIntegerIdsWithoutCallingService(String body) throws Exception {
         mockMvc.perform(post(ROUTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -237,13 +265,16 @@ class EnchantedChestControllerTest {
             {"jogadorId":1,"valorApostaa":10}
             """,
             """
-            {"jogadorId":1,"valor":10}
-            """,
-            """
             {"jogadorId":1,"valorAposta":10,"extra":true}
             """,
             """
+            {"jogadorId":1,"valor":10}
+            """,
+            """
             {"playerId":1,"valorAposta":10}
+            """,
+            """
+            {"jogadorId":1,"valorAposta":10,"idItem":3}
             """
     })
     void shouldRejectUnknownFieldWithoutCallingService(String body) throws Exception {

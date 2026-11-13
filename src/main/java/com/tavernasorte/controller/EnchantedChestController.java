@@ -19,6 +19,7 @@ public class EnchantedChestController {
 
     @PostMapping("/bau/abrir")
     public EnchantedChestResponse open(@Valid @RequestBody EnchantedChestRequest request) {
-        return enchantedChestService.open(request.getPlayerId(), request.getBetAmount());
+        return enchantedChestService.open(
+                request.getPlayerId(), request.getBetAmount(), request.getItemId());
     }
 }
