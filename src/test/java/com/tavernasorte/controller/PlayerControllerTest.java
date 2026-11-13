@@ -1,18 +1,29 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.dto.CreatePlayerRequest;
 import com.tavernasorte.dto.PlayerResponse;
+import com.tavernasorte.exception.DanceNotAllowedException;
+import com.tavernasorte.exception.GlobalExceptionHandler;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.service.PlayerService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.List;
+
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class PlayerControllerTest {
@@ -20,57 +31,77 @@ class PlayerControllerTest {
     @Mock
     private PlayerService playerService;
 
-    @InjectMocks
-    private PlayerController playerController;
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(new PlayerController(playerService))
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+    }
 
     @Test
-    void shouldReturnPlayerWhenItExists() {
-        PlayerResponse player = mock(PlayerResponse.class);
-
+    void shouldReturnPlayerWhenItExists() throws Exception {
+        PlayerResponse player = new PlayerResponse(1L, "Chris Careca", 100,
+                new PlayerResponse.InventoryResponse(List.of(), 3));
         when(playerService.findById(1L)).thenReturn(player);
 
-        ResponseEntity<PlayerResponse> response = playerController.getPlayer(1L);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        mockMvc.perform(get("/players/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.username").value("Chris Careca"))
+                .andExpect(jsonPath("$.balance").value(100));
     }
 
     @Test
-    void shouldReturnNotFoundWhenPlayerDoesNotExist() {
-        when(playerService.findById(1L)).thenReturn(null);
+    void shouldReturnNotFoundWhenPlayerDoesNotExist() throws Exception {
+        when(playerService.findById(1L)).thenThrow(new PlayerNotFoundException());
 
-        ResponseEntity<PlayerResponse> response = playerController.getPlayer(1L);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        mockMvc.perform(get("/players/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
     }
 
     @Test
-    void shouldReturnCreatedWhenPlayerIsCreated() {
-        CreatePlayerRequest request = mock(CreatePlayerRequest.class);
-        PlayerResponse player = mock(PlayerResponse.class);
-
-        when(request.getUsername()).thenReturn("Chris Careca");
+    void shouldReturnCreatedWhenPlayerIsCreated() throws Exception {
+        PlayerResponse player = new PlayerResponse(1L, "Chris Careca", 0,
+                new PlayerResponse.InventoryResponse(List.of(), 3));
         when(playerService.create("Chris Careca")).thenReturn(player);
 
-        ResponseEntity<PlayerResponse> response = playerController.create(request);
+        mockMvc.perform(post("/players")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"Chris Careca\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.username").value("Chris Careca"));
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        verify(playerService).create("Chris Careca");
     }
 
     @Test
-    void shouldReturnOkWhenDanceForGnomeSucceeds() {
-        when(playerService.danceForGnome(1L)).thenReturn(true);
+    void shouldReturnOkWhenDanceForGnomeSucceeds() throws Exception {
+        mockMvc.perform(post("/players/1/dance"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
 
-        ResponseEntity<Void> response = playerController.danceForGnome(1L);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(playerService).danceForGnome(1L);
     }
 
     @Test
-    void shouldReturnBadRequestWhenDanceForGnomeFails() {
-        when(playerService.danceForGnome(1L)).thenReturn(false);
+    void shouldReturnBadRequestWhenDanceForGnomeFails() throws Exception {
+        doThrow(new DanceNotAllowedException()).when(playerService).danceForGnome(1L);
 
-        ResponseEntity<Void> response = playerController.danceForGnome(1L);
+        mockMvc.perform(post("/players/1/dance"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Só é possível dançar para o gnomo quando o saldo é zero"));
+    }
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    @Test
+    void shouldReturnNotFoundWhenDancingForMissingPlayer() throws Exception {
+        doThrow(new PlayerNotFoundException()).when(playerService).danceForGnome(1L);
+
+        mockMvc.perform(post("/players/1/dance"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
     }
 }
