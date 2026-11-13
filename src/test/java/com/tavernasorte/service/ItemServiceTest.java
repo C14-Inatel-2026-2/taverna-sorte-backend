@@ -2,6 +2,7 @@ package com.tavernasorte.service;
 
 import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.repository.ItemRepository;
+import com.tavernasorte.exception.ItemNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -62,15 +63,13 @@ public class ItemServiceTest {
     }
 
     @Test
-    void shouldReturnNullForMissingItem() {
+    void shouldRejectMissingItem() {
 
         ItemService itemService = new ItemService(itemRepository);
 
         when(itemRepository.findById(999L))
                 .thenReturn(Optional.empty());
 
-        Item result = itemService.findById(999L);
-
-        assertNull(result);
+        assertThrows(ItemNotFoundException.class, () -> itemService.findById(999L));
     }
 }
