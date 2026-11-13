@@ -10,11 +10,11 @@ import jakarta.validation.constraints.Positive;
 
 public class EnchantedChestRequest {
 
-    @JsonProperty("jogadorId")
+    @JsonProperty("playerId")
     @NotNull(message = EnchantedChestService.MISSING_PLAYER)
     private Long playerId;
 
-    @JsonProperty("valorAposta")
+    @JsonProperty("betAmount")
     @NotNull(message = "O valor da aposta é obrigatório")
     @Positive(message = "O valor da aposta deve ser maior que zero")
     @Max(value = ChestBetValue.MAXIMUM, message = ChestBetValue.INVALID_MAXIMUM_VALUE)

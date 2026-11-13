@@ -1,17 +1,11 @@
 package com.tavernasorte.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+/** Símbolos do baú; o nome da constante é o valor enviado no JSON. */
 public enum Symbol {
-    @JsonProperty("MOEDA")
     COIN(3),
-    @JsonProperty("POCAO")
     POTION(5),
-    @JsonProperty("ESPADA")
     SWORD(8),
-    @JsonProperty("COROA")
     CROWN(12),
-    @JsonProperty("DRAGAO")
     DRAGON(20);
 
     private final int multiplier;

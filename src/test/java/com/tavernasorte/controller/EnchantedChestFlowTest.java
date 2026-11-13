@@ -74,15 +74,15 @@ class EnchantedChestFlowTest {
         player.getInventory().addItem(item);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN);
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10,"itemId":3}
+                                {"playerId":1,"betAmount":10,"itemId":3}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.simbolos").value(contains("MOEDA", "MOEDA", "MOEDA")))
-                .andExpect(jsonPath("$.premio").value(60))
-                .andExpect(jsonPath("$.saldo").value(1050));
+                .andExpect(jsonPath("$.symbols").value(contains("COIN", "COIN", "COIN")))
+                .andExpect(jsonPath("$.prize").value(60))
+                .andExpect(jsonPath("$.balance").value(1050));
 
         verify(symbolPicker, times(3)).pick();
         assertTrue(player.getInventory().getItems().isEmpty());
@@ -93,14 +93,14 @@ class EnchantedChestFlowTest {
         Player player = givenPlayerWithBalance(1000);
         when(symbolPicker.pick()).thenReturn(Symbol.COIN, Symbol.POTION, Symbol.SWORD);
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10}
+                                {"playerId":1,"betAmount":10}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.premio").value(0))
-                .andExpect(jsonPath("$.saldo").value(990));
+                .andExpect(jsonPath("$.prize").value(0))
+                .andExpect(jsonPath("$.balance").value(990));
 
         assertEquals(990, player.getBalance());
     }
@@ -109,10 +109,10 @@ class EnchantedChestFlowTest {
     void shouldRejectBetAboveBalanceBeforePickingSymbols() throws Exception {
         Player player = givenPlayerWithBalance(5);
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10}
+                                {"playerId":1,"betAmount":10}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(EnchantedChestService.INSUFFICIENT_BALANCE));
@@ -125,10 +125,10 @@ class EnchantedChestFlowTest {
     void shouldReturnNotFoundForUnknownPlayer() throws Exception {
         when(playerRepository.findById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":99,"valorAposta":10}
+                                {"playerId":99,"betAmount":10}
                                 """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
@@ -140,10 +140,10 @@ class EnchantedChestFlowTest {
     void shouldRejectItemOutsideInventoryBeforePickingSymbols() throws Exception {
         givenPlayerWithBalance(1000);
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10,"itemId":3}
+                                {"playerId":1,"betAmount":10,"itemId":3}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(EnchantedChestService.ITEM_NOT_IN_INVENTORY));
@@ -153,10 +153,10 @@ class EnchantedChestFlowTest {
 
     @Test
     void shouldRejectFractionalBetBeforePickingSymbols() throws Exception {
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10.5}
+                                {"playerId":1,"betAmount":10.5}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Valor inválido na requisição"));
@@ -169,22 +169,22 @@ class EnchantedChestFlowTest {
         givenPlayerWithBalance(ChestBetValue.MAXIMUM);
         when(symbolPicker.pick()).thenReturn(Symbol.DRAGON);
 
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10000}
+                                {"playerId":1,"betAmount":10000}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("\"premio\":200000,")))
-                .andExpect(jsonPath("$.saldo").value(200000));
+                .andExpect(content().string(containsString("\"prize\":200000,")))
+                .andExpect(jsonPath("$.balance").value(200000));
     }
 
     @Test
     void shouldRejectBetAboveMaximumBeforePickingSymbols() throws Exception {
-        mockMvc.perform(post("/bau/abrir")
+        mockMvc.perform(post("/chest/open")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"jogadorId":1,"valorAposta":10001}
+                                {"playerId":1,"betAmount":10001}
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(ChestBetValue.INVALID_MAXIMUM_VALUE));

@@ -7,11 +7,11 @@ import java.util.List;
 
 public class EnchantedChestResponse {
 
-    @JsonProperty("simbolos")
+    @JsonProperty("symbols")
     private final List<Symbol> symbols;
-    @JsonProperty("premio")
+    @JsonProperty("prize")
     private final int prize;
-    @JsonProperty("saldo")
+    @JsonProperty("balance")
     private final int balance;
 
     public EnchantedChestResponse(List<Symbol> symbols, int prize, int balance) {

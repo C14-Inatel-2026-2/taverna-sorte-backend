@@ -24,7 +24,7 @@ class EnchantedChestRequestJsonTest {
     @Test
     void shouldReadIntegerBetAmount() throws Exception {
         EnchantedChestRequest request = objectMapper.readValue(
-                "{\"valorAposta\":10}", EnchantedChestRequest.class);
+                "{\"betAmount\":10}", EnchantedChestRequest.class);
 
         assertEquals(10, request.getBetAmount());
     }
@@ -33,6 +33,6 @@ class EnchantedChestRequestJsonTest {
     @ValueSource(strings = {"10.5", "10.0", "1e2"})
     void shouldRejectFractionalBetAmountInsteadOfTruncating(String value) {
         assertThrows(MismatchedInputException.class, () -> objectMapper.readValue(
-                "{\"valorAposta\":" + value + "}", EnchantedChestRequest.class));
+                "{\"betAmount\":" + value + "}", EnchantedChestRequest.class));
     }
 }
