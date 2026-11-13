@@ -27,13 +27,7 @@ public class ShopController {
 
     @GetMapping("/items/{id}")
     public ResponseEntity<Item> getItem(@PathVariable Long id) {
-        Item item = itemService.findById(id);
-
-        if (item == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(item);
+        return ResponseEntity.ok(itemService.findById(id));
     }
 
     @PostMapping("/purchase/{playerId}/{itemId}")
@@ -41,12 +35,7 @@ public class ShopController {
             @PathVariable Long playerId,
             @PathVariable Long itemId) {
 
-        boolean success = shopService.buyItem(playerId, itemId);
-
-        if (!success) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        shopService.buyItem(playerId, itemId);
         return ResponseEntity.ok().build();
     }
 }
