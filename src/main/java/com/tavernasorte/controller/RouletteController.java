@@ -6,11 +6,9 @@ import com.tavernasorte.dto.RouletteHistoryResponse;
 import com.tavernasorte.dto.RoulettePlayRequest;
 import com.tavernasorte.dto.RoulettePlayResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class RouletteController {
@@ -37,11 +35,5 @@ public class RouletteController {
     @GetMapping("/roleta/{playerId}/historico")
     public List<RouletteHistoryResponse> history(@PathVariable Long playerId) {
         return historyService.findByPlayer(playerId);
-    }
-
-    @ExceptionHandler(RouletteHistoryService.PlayerNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> playerNotFound(RouletteHistoryService.PlayerNotFoundException exception) {
-        return Map.of("error", exception.getMessage());
     }
 }
