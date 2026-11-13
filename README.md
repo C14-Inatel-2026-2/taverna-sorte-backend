@@ -49,7 +49,7 @@ Esta seção apresenta as funcionalidades do sistema e os requisitos que orienta
   - Três símbolos iguais: prêmio correspondente ao valor da aposta multiplicado pelo multiplicador do símbolo.
   - Exatamente dois símbolos iguais: devolução do valor apostado.
   - Três símbolos diferentes: nenhum prêmio.
-- Rejeitar apostas ausentes, nulas, iguais a zero, negativas, superiores a R$ 10.000,00 ou com mais de duas casas decimais, conforme os critérios de aceite da história C14-20.
+- Rejeitar apostas ausentes, nulas, iguais a zero, negativas, superiores a 10.000 moedas ou que não sejam números inteiros, conforme os critérios de aceite da história C14-20.
 
 **Histórico de partidas**
 
@@ -111,7 +111,9 @@ Exemplo de requisição para o Baú Encantado:
 
 ```json
 {
-  "valorAposta": 10.0
+  "playerId": 1,
+  "betAmount": 10,
+  "itemId": 3
 }
 ```
 
@@ -119,10 +121,14 @@ Exemplo da estrutura de resposta:
 
 ```json
 {
-  "simbolos": ["..."],
-  "premio": 20.0
+  "symbols": ["COIN", "COIN", "POTION"],
+  "prize": 20,
+  "balance": 1010
 }
 ```
+
+No exemplo, o jogador tinha 1000 moedas, o par de símbolos devolve a aposta (10)
+e o item usado tem `multiplier` 2: 1000 - 10 + 20 = 1010.
 
 O frontend deve utilizar o resultado retornado pela API, sem reproduzir localmente o sorteio ou o cálculo do prêmio.
 
@@ -279,34 +285,47 @@ model/ChestBetValue.java
 
 A interface `SymbolPicker` permite substituir o gerador aleatório por um mock nos testes. `Symbol` fica em `model/` por ser um enum do jogo, sem representar uma entidade persistida.
 
-A rota `POST /bau/abrir` recebe `{"valorAposta": 10.0}` e retorna os campos `simbolos` e `premio`. Três símbolos iguais pagam seu multiplicador, um par devolve a aposta e três símbolos diferentes não pagam prêmio.
+A rota `POST /chest/open` recebe `{"playerId": 1, "betAmount": 10, "itemId": 3}` e retorna os campos `symbols`, `prize` e `balance`. `symbols` traz três valores entre `COIN`, `POTION`, `SWORD`, `CROWN` e `DRAGON` (multiplicadores 3, 5, 8, 12 e 20). Três símbolos iguais pagam seu multiplicador, um par devolve a aposta e três símbolos diferentes não pagam prêmio.
 
-Valores de aposta e prêmio usam `BigDecimal`, em unidades da moeda do jogo.
-`ChestBetValue` centraliza as regras: valor obrigatório, positivo, com até
-5 dígitos inteiros e 2 casas decimais, e no máximo `10000.00`.
-Entradas com mais de duas casas decimais são rejeitadas, sem arredondamento
-silencioso. Valores aceitos são normalizados para duas casas decimais,
-e o prêmio continua sendo um número no JSON.
+A jogada usa o saldo do jogador informado em `playerId`: a aposta é debitada
+antes do sorteio e o prêmio é creditado depois. `balance` é o saldo do jogador
+após a jogada. `itemId` é opcional; quando informado, o item precisa estar no
+inventário do jogador, o prêmio é multiplicado pelo `multiplier` do item e o
+item é consumido, mesmo que o prêmio seja zero. Como o saldo do jogador tem
+limite de 1.000.000 moedas, a aposta é recusada se o maior prêmio possível (três
+dragões, multiplicado pelo item) deixaria o saldo acima desse limite, a mesma
+regra do jogo de dados. Todas as validações acontecem antes do sorteio, então
+uma jogada recusada não altera saldo nem inventário.
 
-O corpo da requisição é estrito: o único campo aceito é `valorAposta`, e
-qualquer outro campo (inclusive o antigo `valor`) rejeita a requisição.
-Isso vale só para o baú; os demais endpoints não foram alterados.
+Aposta e prêmio são moedas inteiras do jogo (`int`). `ChestBetValue` centraliza
+as regras: valor obrigatório, positivo e no máximo `10000`. Como os
+multiplicadores dos símbolos também são inteiros, o prêmio é sempre inteiro.
 
-A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`,
-`@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo
-formato usado em usuários (`{"error": "..."}`):
+Valores fracionários são rejeitados, sem arredondamento silencioso: o
+`application.yml` desativa `spring.jackson.deserialization.accept-float-as-int`,
+que por padrão faria o Jackson converter `10.5` em `10`. Essa configuração vale
+para todos os campos inteiros da API.
 
-A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Digits`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`).
+O corpo da requisição é estrito: os únicos campos aceitos são `playerId`,
+`betAmount` e `itemId`, e qualquer outro campo (inclusive os antigos nomes em português, como `valorAposta`)
+rejeita a requisição. Isso vale só para o baú; os demais endpoints não foram alterados.
+
+A entrada é validada com Bean Validation em `EnchantedChestRequest` (`@NotNull`, `@Positive` e `@Max`), e os erros são tratados pelo `GlobalExceptionHandler` no mesmo formato usado em usuários (`{"error": "..."}`).
 
 | Requisição | Status esperado | Resultado esperado |
 |---|---|---|
-| `{"valorAposta": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
-| `{}` ou `{"valorAposta": null}` | 400 | O valor da aposta é obrigatório |
-| Mais de 2 casas decimais ou mais de 5 dígitos inteiros | 400 | A aposta deve ter no máximo 5 dígitos inteiros e 2 casas decimais |
-| Acima de `10000.00` (ex.: `10000.01`) | 400 | O valor máximo da aposta é 10000.00 |
-| `{"valorAposta": "abc"}`, JSON malformado ou campo desconhecido (ex.: `{"valor": 10.0}`) | 400 | Valor inválido na requisição |
+| Sem `playerId` ou `{"playerId": null, ...}` | 400 | O jogador é obrigatório |
+| `playerId` inexistente | 404 | Jogador não encontrado |
+| `{"betAmount": 0}` ou negativo | 400 | O valor da aposta deve ser maior que zero |
+| Sem `betAmount` ou `{"betAmount": null, ...}` | 400 | O valor da aposta é obrigatório |
+| Acima de `10000` (ex.: `10001`) | 400 | O valor máximo da aposta é 10000 |
+| Aposta maior que o saldo do jogador | 400 | Saldo insuficiente para a aposta |
+| Prêmio máximo possível levaria o saldo acima de 1.000.000 | 400 | O prêmio máximo desta aposta ultrapassaria o saldo máximo de 1000000 moedas |
+| `itemId` fora do inventário do jogador | 400 | O item não está no inventário do jogador |
+| Número com casas decimais (ex.: `10.5` ou `10.0`) ou fora da faixa de `int`/`long` | 400 | Valor inválido na requisição |
+| `{"betAmount": "abc"}`, JSON malformado ou campo desconhecido (ex.: `{"valorAposta": 10}`) | 400 | Valor inválido na requisição |
 
-O `EnchantedChestService` também deve validar o valor por meio de `ChestBetValue` antes de sortear e lançar `InvalidBetException`, pois pode ser chamado sem passar pelo controller. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
+O `EnchantedChestService` também valida jogador, aposta, saldo e item antes de sortear e lança `InvalidBetException` ou `PlayerNotFoundException`, pois pode ser chamado sem passar pelo controller. O método `open` é `@Transactional`: as alterações de saldo e inventário são gravadas pelo JPA ao fim da transação. O cálculo do prêmio é privado e recebe somente os dados preparados por `open`.
 
 Esta refatoração se limita ao baú. Dice, roleta, usuários e loja mantêm a implementação da `main`, incluindo seus pacotes e contratos.
 
