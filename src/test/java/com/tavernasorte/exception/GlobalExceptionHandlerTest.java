@@ -91,7 +91,6 @@ class GlobalExceptionHandlerTest {
         return Stream.of(
                 Arguments.of(new PlayerNotFoundException(), 404),
                 Arguments.of(new ItemNotFoundException(), 404),
-                Arguments.of(new EmailAlreadyInUseException(), 409),
                 Arguments.of(new InvalidBetException("Aposta inválida"), 400),
                 Arguments.of(new InvalidPlayerException("O username é obrigatório"), 400),
                 Arguments.of(new InvalidItemException("O item é obrigatório"), 400),

@@ -26,11 +26,6 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
-    @ExceptionHandler(EmailAlreadyInUseException.class)
-    public ResponseEntity<ApiErrorResponse> handleEmailAlreadyInUse(EmailAlreadyInUseException exception) {
-        return error(HttpStatus.CONFLICT, exception.getMessage());
-    }
-
     @ExceptionHandler({
             InvalidBetException.class, InvalidItemException.class, InvalidPlayerException.class,
             InvalidBalanceException.class, InsufficientBalanceException.class,
