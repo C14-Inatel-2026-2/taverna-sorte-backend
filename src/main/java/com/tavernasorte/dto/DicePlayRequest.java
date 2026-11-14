@@ -66,4 +66,9 @@ public class DicePlayRequest {
         this.itemId = itemId;
     }
 
+     @JsonAnySetter
+    private void rejectUnknownField(String name, Object value) {
+        throw new IllegalArgumentException("Campo desconhecido: " + name);
+    }
+
 }

@@ -28,9 +28,9 @@ public class GlobalExceptionHandler {
                 ));
     }
 
-    @ExceptionHandler(InvalidBetException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidBet(
-            InvalidBetException exception
+    @ExceptionHandler({InvalidBetException.class, InvalidItemException.class})
+    public ResponseEntity<Map<String, String>> handleBusinessError(
+            IllegalArgumentException exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

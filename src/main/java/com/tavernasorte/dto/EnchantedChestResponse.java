@@ -1,17 +1,13 @@
 package com.tavernasorte.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tavernasorte.model.Symbol;
 
 import java.util.List;
 
 public class EnchantedChestResponse {
 
-    @JsonProperty("symbols")
     private final List<Symbol> symbols;
-    @JsonProperty("prize")
     private final int prize;
-    @JsonProperty("balance")
     private final int balance;
 
     public EnchantedChestResponse(List<Symbol> symbols, int prize, int balance) {

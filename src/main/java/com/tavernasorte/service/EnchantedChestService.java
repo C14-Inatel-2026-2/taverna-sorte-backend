@@ -40,16 +40,13 @@ public class EnchantedChestService {
         this.playerRepository = playerRepository;
     }
 
-    /**
-     * Valida tudo antes do sorteio; se algo falhar, nada é sorteado nem debitado.
-     * As alterações no jogador são salvas pelo JPA ao fim da transação.
-     */
     @Transactional
     public EnchantedChestResponse open(Long playerId, Integer betAmount, Long itemId) {
         ChestBetValue bet = new ChestBetValue(betAmount);
         Player player = findPlayer(playerId);
         Item item = findItemInInventory(player, itemId);
-        ensureMaximumPrizeFitsBalanceLimit(player, bet, item);
+        int itemMultiplier = multiplierOf(item);
+        ensureMaximumPrizeFitsBalanceLimit(player, bet, itemMultiplier);
 
         if (!player.debit(bet.value())) {
             throw new InvalidBetException(INSUFFICIENT_BALANCE);
@@ -60,14 +57,13 @@ public class EnchantedChestService {
             symbols.add(symbolPicker.pick());
         }
 
-        // A checagem do limite garante que o prêmio cabe em int e no saldo máximo.
-        int prize = calculatePrize(symbols, bet) * multiplierOf(item);
+        int prize = calculatePrize(symbols, bet) * itemMultiplier;
         if (prize > 0) {
-            player.addBalance(prize); // Player recusa crédito de valor zero
+            player.addBalance(prize);
         }
 
         if (item != null) {
-            player.getInventory().removeItem(item); // o item é consumido mesmo sem prêmio
+            player.getInventory().removeItem(item);
         }
 
         return new EnchantedChestResponse(symbols, prize, player.getBalance());
@@ -81,7 +77,6 @@ public class EnchantedChestService {
                 .orElseThrow(PlayerNotFoundException::new);
     }
 
-    /** Retorna null quando a jogada não usa item. */
     private Item findItemInInventory(Player player, Long itemId) {
         if (itemId == null) {
             return null;
@@ -92,19 +87,15 @@ public class EnchantedChestService {
                 .orElseThrow(() -> new InvalidBetException(ITEM_NOT_IN_INVENTORY));
     }
 
-    /**
-     * Mesma regra do dado: recusa a aposta se o maior prêmio possível
-     * (três dragões, multiplicado pelo item) deixaria o saldo acima do máximo.
-     */
-    private void ensureMaximumPrizeFitsBalanceLimit(Player player, ChestBetValue bet, Item item) {
-        long maximumPrize = (long) bet.value() * MAX_SYMBOL_MULTIPLIER * multiplierOf(item);
-        if (player.getBalance() - bet.value() + maximumPrize > Player.MAX_BALANCE) {
+    private void ensureMaximumPrizeFitsBalanceLimit(Player player, ChestBetValue bet, int itemMultiplier) {
+        long maximumPrize = (long) bet.value() * MAX_SYMBOL_MULTIPLIER * itemMultiplier;
+        if ((long) player.getBalance() - bet.value() + maximumPrize > Player.MAX_BALANCE) {
             throw new InvalidBetException(MAX_BALANCE_EXCEEDED);
         }
     }
 
     private int multiplierOf(Item item) {
-        return item == null ? NO_ITEM_MULTIPLIER : item.getMultiplier();
+        return item == null ? NO_ITEM_MULTIPLIER : item.prizeMultiplier();
     }
 
     private int calculatePrize(List<Symbol> symbols, ChestBetValue bet) {
@@ -114,7 +105,7 @@ public class EnchantedChestService {
             return bet.value() * symbols.get(0).getMultiplier();
         }
         if (distinctSymbolCount == 2) {
-            return bet.value(); // par de símbolos iguais devolve a aposta
+            return bet.value();
         }
         return 0;
     }

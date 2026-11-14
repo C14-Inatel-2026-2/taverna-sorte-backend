@@ -7,10 +7,20 @@ import java.util.Random;
 @Component
 public class RandomDiceRoller implements DiceRoller {
 
-    private final Random random = new Random();
+    private static final int SIDES = 6;
+
+    private final Random random;
+
+    public RandomDiceRoller() {
+        this(new Random());
+    }
+
+    RandomDiceRoller(Random random) {
+        this.random = random;
+    }
 
     @Override
     public int roll() {
-        return random.nextInt(6) + 1;
+        return random.nextInt(SIDES) + 1;
     }
 }
