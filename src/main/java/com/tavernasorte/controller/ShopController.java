@@ -30,10 +30,6 @@ public class ShopController {
     public ResponseEntity<ItemResponse> getItem(@PathVariable Long id) {
         Item item = itemService.findById(id);
 
-        if (item == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(ItemResponse.from(item));
     }
 

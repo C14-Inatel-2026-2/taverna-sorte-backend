@@ -2,6 +2,10 @@ package com.tavernasorte.controller;
 
 import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.exception.GlobalExceptionHandler;
+import com.tavernasorte.exception.InsufficientBalanceException;
+import com.tavernasorte.exception.InventoryFullException;
+import com.tavernasorte.exception.ItemNotFoundException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.service.ItemService;
 import com.tavernasorte.service.ShopService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,12 +19,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @ExtendWith(MockitoExtension.class)
 class ShopControllerTest {
@@ -63,17 +69,15 @@ class ShopControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenItemDoesNotExist() throws Exception {
-        when(itemService.findById(1L)).thenReturn(null);
+        when(itemService.findById(1L)).thenThrow(new ItemNotFoundException());
 
         mockMvc.perform(get("/shop/items/1"))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(""));
+                .andExpect(jsonPath("$.error").value("Item não encontrado"));
     }
 
     @Test
     void shouldReturnOkWhenPurchaseSucceeds() throws Exception {
-        when(shopService.buyItem(1L, 1L)).thenReturn(true);
-
         mockMvc.perform(post("/shop/purchase/1/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
@@ -83,11 +87,38 @@ class ShopControllerTest {
 
     @Test
     void shouldReturnBadRequestWhenPurchaseFails() throws Exception {
-        when(shopService.buyItem(1L, 1L)).thenReturn(false);
+        doThrow(new InsufficientBalanceException("Saldo insuficiente para a compra")).when(shopService).buyItem(1L, 1L);
 
         mockMvc.perform(post("/shop/purchase/1/1"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(""));
+                .andExpect(jsonPath("$.error").value("Saldo insuficiente para a compra"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenPurchasingForMissingPlayer() throws Exception {
+        doThrow(new PlayerNotFoundException()).when(shopService).buyItem(1L, 1L);
+
+        mockMvc.perform(post("/shop/purchase/1/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Jogador não encontrado"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenPurchasingMissingItem() throws Exception {
+        doThrow(new ItemNotFoundException()).when(shopService).buyItem(1L, 1L);
+
+        mockMvc.perform(post("/shop/purchase/1/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Item não encontrado"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenInventoryIsFull() throws Exception {
+        doThrow(new InventoryFullException()).when(shopService).buyItem(1L, 1L);
+
+        mockMvc.perform(post("/shop/purchase/1/1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("O inventário está cheio"));
     }
 
     private Item createItem() {
