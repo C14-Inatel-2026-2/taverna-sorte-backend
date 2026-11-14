@@ -1,25 +1,26 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.service.RouletteService;
-import com.tavernasorte.service.RouletteHistoryService;
-import com.tavernasorte.dto.RouletteHistoryResponse;
 import com.tavernasorte.dto.RoulettePlayRequest;
 import com.tavernasorte.dto.RoulettePlayResponse;
 import com.tavernasorte.dto.RouletteSpinResponse;
+import com.tavernasorte.service.PlayerService;
+import com.tavernasorte.service.RouletteService;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class RouletteController {
 
     private final RouletteService rouletteService;
-    private final RouletteHistoryService historyService;
+    private final PlayerService playerService;
 
-    public RouletteController(RouletteService rouletteService, RouletteHistoryService historyService) {
+    public RouletteController(RouletteService rouletteService, PlayerService playerService) {
         this.rouletteService = rouletteService;
-        this.historyService = historyService;
+        this.playerService = playerService;
     }
 
     @GetMapping("/roleta/girar")
@@ -30,11 +31,7 @@ public class RouletteController {
     @PostMapping("/roleta/{playerId}/jogar")
     public RoulettePlayResponse play(@PathVariable Long playerId,
                                      @Valid @RequestBody RoulettePlayRequest request) {
-        return historyService.play(playerId, request.betType(), request.chosenNumber(), request.betAmount());
-    }
-
-    @GetMapping("/roleta/{playerId}/historico")
-    public List<RouletteHistoryResponse> history(@PathVariable Long playerId) {
-        return historyService.findByPlayer(playerId);
+        playerService.findById(playerId);
+        return rouletteService.play(request.betType(), request.chosenNumber(), request.betAmount());
     }
 }
