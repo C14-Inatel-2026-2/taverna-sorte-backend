@@ -26,7 +26,7 @@ class EnchantedChestRequestJsonTest {
         EnchantedChestRequest request = objectMapper.readValue(
                 "{\"betAmount\":10}", EnchantedChestRequest.class);
 
-        assertEquals(10, request.getBetAmount());
+        assertEquals(10, request.betAmount());
     }
 
     @ParameterizedTest

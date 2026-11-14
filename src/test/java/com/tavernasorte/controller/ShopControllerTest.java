@@ -1,23 +1,33 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.database.entity.Item;
+import com.tavernasorte.exception.GlobalExceptionHandler;
 import com.tavernasorte.service.ItemService;
 import com.tavernasorte.service.ShopService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class ShopControllerTest {
+
+    private static final String ITEM_JSON = """
+            {"id":1,"name":"Poção","price":50,"multiplier":2,"description":"Dobra o prêmio"}
+            """;
 
     @Mock
     private ItemService itemService;
@@ -25,50 +35,68 @@ class ShopControllerTest {
     @Mock
     private ShopService shopService;
 
-    @InjectMocks
-    private ShopController shopController;
+    private MockMvc mockMvc;
 
-    @Test
-    void shouldReturnAllItems() {
-        List<Item> items = List.of(mock(Item.class));
-
-        when(itemService.findAll()).thenReturn(items);
-        ResponseEntity<List<Item>> response = shopController.getItems();
-
-        assertEquals(ResponseEntity.ok(items), response);
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(new ShopController(itemService, shopService))
+                .setControllerAdvice(new GlobalExceptionHandler()).build();
     }
 
     @Test
-    void shouldReturnItemWhenItExists() {
-        Item item = mock(Item.class);
+    void shouldReturnAllItems() throws Exception {
+        when(itemService.findAll()).thenReturn(List.of(createItem()));
 
-        when(itemService.findById(1L)).thenReturn(item);
-        ResponseEntity<Item> response = shopController.getItem(1L);
-
-        assertEquals(ResponseEntity.ok(item), response);
+        mockMvc.perform(get("/shop/items"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[" + ITEM_JSON + "]", true));
     }
 
     @Test
-    void shouldReturnNotFoundWhenItemDoesNotExist() {
+    void shouldReturnItemWhenItExists() throws Exception {
+        when(itemService.findById(1L)).thenReturn(createItem());
+
+        mockMvc.perform(get("/shop/items/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(ITEM_JSON, true));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenItemDoesNotExist() throws Exception {
         when(itemService.findById(1L)).thenReturn(null);
-        ResponseEntity<Item> response = shopController.getItem(1L);
 
-        assertEquals(ResponseEntity.notFound().build(), response);
+        mockMvc.perform(get("/shop/items/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
     }
 
     @Test
-    void shouldReturnOkWhenPurchaseSucceeds() {
+    void shouldReturnOkWhenPurchaseSucceeds() throws Exception {
         when(shopService.buyItem(1L, 1L)).thenReturn(true);
-        ResponseEntity<Void> response = shopController.buyItem(1L, 1L);
 
-        assertEquals(ResponseEntity.ok().build(), response);
+        mockMvc.perform(post("/shop/purchase/1/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
+
+        verify(shopService).buyItem(1L, 1L);
     }
 
     @Test
-    void shouldReturnBadRequestWhenPurchaseFails() {
+    void shouldReturnBadRequestWhenPurchaseFails() throws Exception {
         when(shopService.buyItem(1L, 1L)).thenReturn(false);
-        ResponseEntity<Void> response = shopController.buyItem(1L, 1L);
 
-        assertEquals(ResponseEntity.badRequest().build(), response);
+        mockMvc.perform(post("/shop/purchase/1/1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(""));
+    }
+
+    private Item createItem() {
+        Item item = new Item();
+        ReflectionTestUtils.setField(item, "id", 1L);
+        item.setName("Poção");
+        item.setPrice(50);
+        item.setMultiplier(2);
+        item.setDescription("Dobra o prêmio");
+        return item;
     }
 }

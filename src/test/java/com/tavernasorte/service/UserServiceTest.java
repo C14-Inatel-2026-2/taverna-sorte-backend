@@ -54,7 +54,7 @@ class UserServiceTest {
 
         CreateUserResponse response = userService.create(request);
 
-        assertEquals(email, response.getEmail());
+        assertEquals(email, response.email());
     }
 
     @Test

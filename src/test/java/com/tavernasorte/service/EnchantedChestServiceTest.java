@@ -62,8 +62,8 @@ class EnchantedChestServiceTest {
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertAll("resultado do baú",
-                () -> assertEquals(List.of(symbol, symbol, symbol), result.getSymbols()),
-                () -> assertEquals(expectedPrize, result.getPrize())
+                () -> assertEquals(List.of(symbol, symbol, symbol), result.symbols()),
+                () -> assertEquals(expectedPrize, result.prize())
         );
         verify(symbolPicker, times(3)).pick();
     }
@@ -75,7 +75,7 @@ class EnchantedChestServiceTest {
 
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
-        assertEquals(10, result.getPrize());
+        assertEquals(10, result.prize());
     }
 
     @Test
@@ -85,7 +85,7 @@ class EnchantedChestServiceTest {
 
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
-        assertEquals(0, result.getPrize());
+        assertEquals(0, result.prize());
     }
 
     @Test
@@ -95,7 +95,7 @@ class EnchantedChestServiceTest {
 
         EnchantedChestResponse result = service.open(PLAYER_ID, ChestBetValue.MAXIMUM, null);
 
-        assertEquals(200000, result.getPrize());
+        assertEquals(200000, result.prize());
     }
 
     // ---------- Saldo do jogador ----------
@@ -109,7 +109,7 @@ class EnchantedChestServiceTest {
 
         assertAll("saldo após a jogada",
                 () -> assertEquals(1020, player.getBalance()),
-                () -> assertEquals(1020, result.getBalance())
+                () -> assertEquals(1020, result.balance())
         );
     }
 
@@ -121,7 +121,7 @@ class EnchantedChestServiceTest {
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(990, player.getBalance());
-        assertEquals(990, result.getBalance());
+        assertEquals(990, result.balance());
     }
 
     @Test
@@ -155,7 +155,7 @@ class EnchantedChestServiceTest {
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, null);
 
         assertEquals(Player.MAX_BALANCE, player.getBalance());
-        assertEquals(Player.MAX_BALANCE, result.getBalance());
+        assertEquals(Player.MAX_BALANCE, result.balance());
     }
 
     @Test
@@ -218,7 +218,7 @@ class EnchantedChestServiceTest {
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, ITEM_ID);
 
         assertAll("prêmio com item",
-                () -> assertEquals(60, result.getPrize()),
+                () -> assertEquals(60, result.prize()),
                 () -> assertEquals(1050, player.getBalance())
         );
     }
@@ -242,7 +242,7 @@ class EnchantedChestServiceTest {
 
         EnchantedChestResponse result = service.open(PLAYER_ID, 10, ITEM_ID);
 
-        assertEquals(0, result.getPrize());
+        assertEquals(0, result.prize());
         assertFalse(player.getInventory().getItems().contains(item));
     }
 

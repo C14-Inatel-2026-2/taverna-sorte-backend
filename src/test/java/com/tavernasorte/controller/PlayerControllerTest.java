@@ -1,6 +1,7 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.dto.CreatePlayerRequest;
+import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.dto.PlayerResponse;
 import com.tavernasorte.service.PlayerService;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class PlayerControllerTest {
 
     @Test
     void shouldReturnPlayerWhenItExists() {
-        PlayerResponse player = mock(PlayerResponse.class);
+        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
 
         when(playerService.findById(1L)).thenReturn(player);
 
@@ -45,10 +46,9 @@ class PlayerControllerTest {
 
     @Test
     void shouldReturnCreatedWhenPlayerIsCreated() {
-        CreatePlayerRequest request = mock(CreatePlayerRequest.class);
-        PlayerResponse player = mock(PlayerResponse.class);
+        CreatePlayerRequest request = new CreatePlayerRequest("Chris Careca");
+        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
 
-        when(request.getUsername()).thenReturn("Chris Careca");
         when(playerService.create("Chris Careca")).thenReturn(player);
 
         ResponseEntity<PlayerResponse> response = playerController.create(request);
