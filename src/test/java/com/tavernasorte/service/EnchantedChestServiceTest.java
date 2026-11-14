@@ -174,10 +174,9 @@ class EnchantedChestServiceTest {
 
     @Test
     void shouldConsiderItemMultiplierInBalanceLimitBeforePickingSymbols() {
-        // sem item: 990000 - 10 + 200 cabe; com item x100: 990000 - 10 + 20000 não cabe
-        int balance = Player.MAX_BALANCE - 10000;
+        int balance = Player.MAX_BALANCE - 1000;
         Player player = givenPlayerWithBalance(balance);
-        Item item = givenItemInInventory(player, ITEM_ID, 100);
+        Item item = givenItemInInventory(player, ITEM_ID, Item.MAX_MULTIPLIER);
 
         InvalidBetException exception = assertThrows(InvalidBetException.class,
                 () -> service.open(PLAYER_ID, 10, ITEM_ID));

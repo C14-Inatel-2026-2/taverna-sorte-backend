@@ -1,7 +1,5 @@
 package com.tavernasorte.controller;
 
-import com.tavernasorte.dto.CreatePlayerRequest;
-import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.dto.PlayerResponse;
 import com.tavernasorte.exception.DanceNotAllowedException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
@@ -35,9 +33,11 @@ class PlayerControllerTest {
 
     private MockMvc mockMvc;
 
-    @Test
-    void shouldReturnPlayerWhenItExists() {
-        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(new PlayerController(playerService))
+                .setControllerAdvice(new GlobalExceptionHandler()).build();
+    }
 
     @Test
     void shouldReturnPlayerWhenItExists() throws Exception {
@@ -49,7 +49,9 @@ class PlayerControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("Chris Careca"))
-                .andExpect(jsonPath("$.balance").value(100));
+                .andExpect(jsonPath("$.balance").value(100))
+                .andExpect(jsonPath("$.inventory.items").isEmpty())
+                .andExpect(jsonPath("$.inventory.itemLimit").value(3));
     }
 
     @Test
@@ -62,10 +64,9 @@ class PlayerControllerTest {
     }
 
     @Test
-    void shouldReturnCreatedWhenPlayerIsCreated() {
-        CreatePlayerRequest request = new CreatePlayerRequest("Chris Careca");
-        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
-
+    void shouldReturnCreatedWhenPlayerIsCreated() throws Exception {
+        PlayerResponse player = new PlayerResponse(1L, "Chris Careca", 100,
+                new PlayerResponse.InventoryResponse(List.of(), 3));
         when(playerService.create("Chris Careca")).thenReturn(player);
 
         mockMvc.perform(post("/players")

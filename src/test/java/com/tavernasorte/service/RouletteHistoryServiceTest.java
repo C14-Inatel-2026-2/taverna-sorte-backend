@@ -5,6 +5,7 @@ import com.tavernasorte.database.entity.RouletteHistory;
 import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.database.repository.RouletteHistoryRepository;
 import com.tavernasorte.dto.RoulettePlayResponse;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.exception.InvalidBetException;
 import com.tavernasorte.model.RouletteBetType;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +69,7 @@ class RouletteHistoryServiceTest {
     void shouldRejectMissingPlayerBeforePlaying() {
         when(players.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(RouletteHistoryService.PlayerNotFoundException.class,
+        assertThrows(PlayerNotFoundException.class,
                 () -> service.play(99L, RouletteBetType.NUMBER, 1, 10));
 
         verifyNoInteractions(roulette, history);
@@ -103,7 +104,7 @@ class RouletteHistoryServiceTest {
     void shouldNotReturnHistoryForMissingPlayer() {
         when(players.existsById(99L)).thenReturn(false);
 
-        assertThrows(RouletteHistoryService.PlayerNotFoundException.class, () -> service.findByPlayer(99L));
+        assertThrows(PlayerNotFoundException.class, () -> service.findByPlayer(99L));
 
         verifyNoInteractions(history);
     }

@@ -2,6 +2,7 @@ package com.tavernasorte.controller;
 
 import com.tavernasorte.dto.RouletteHistoryResponse;
 import com.tavernasorte.dto.RoulettePlayResponse;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
 import com.tavernasorte.model.RouletteBetType;
 import com.tavernasorte.service.RouletteHistoryService;
@@ -79,7 +80,7 @@ class RouletteControllerTest {
 
     @Test
     void shouldReturnNotFoundForUnknownPlayer() throws Exception {
-        when(history.findByPlayer(99L)).thenThrow(new RouletteHistoryService.PlayerNotFoundException());
+        when(history.findByPlayer(99L)).thenThrow(new PlayerNotFoundException());
 
         mvc.perform(get("/roleta/99/historico"))
                 .andExpect(status().isNotFound())
