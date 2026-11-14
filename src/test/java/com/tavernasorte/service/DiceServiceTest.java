@@ -69,10 +69,10 @@ class DiceServiceTest {
         );
 
         assertAll(
-            () -> assertEquals(expectedSum, result.getSum()),
-            () -> assertEquals(expectedWin, result.isWon()),
-            () -> assertEquals(expectedPrize, result.getPrize()),
-            () -> assertEquals(expectedBalance, result.getBalance()),
+            () -> assertEquals(expectedSum, result.sum()),
+            () -> assertEquals(expectedWin, result.won()),
+            () -> assertEquals(expectedPrize, result.prize()),
+            () -> assertEquals(expectedBalance, result.balance()),
             () -> assertEquals(expectedBalance, player.getBalance())
         );
     }
@@ -92,7 +92,7 @@ class DiceServiceTest {
         );
 
         assertAll(
-            () -> assertEquals(60, result.getPrize()),
+            () -> assertEquals(60, result.prize()),
             () -> assertEquals(150, player.getBalance())
         );
     }
@@ -127,7 +127,7 @@ class DiceServiceTest {
         );
 
         assertAll(
-            () -> assertEquals(0, result.getPrize()),
+            () -> assertEquals(0, result.prize()),
             () -> assertEquals(90, player.getBalance()),
             () -> assertTrue(player.getInventory().getItems().isEmpty())
         );
@@ -148,7 +148,7 @@ class DiceServiceTest {
         );
 
         assertAll(
-            () -> assertEquals(20, result.getPrize()),
+            () -> assertEquals(20, result.prize()),
             () -> assertEquals(1, player.getInventory().getItems().size())
         );
     }

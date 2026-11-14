@@ -1,5 +1,7 @@
 package com.tavernasorte.controller;
 
+import com.tavernasorte.dto.CreatePlayerRequest;
+import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.dto.PlayerResponse;
 import com.tavernasorte.exception.DanceNotAllowedException;
 import com.tavernasorte.exception.GlobalExceptionHandler;
@@ -33,12 +35,9 @@ class PlayerControllerTest {
 
     private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new PlayerController(playerService))
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .build();
-    }
+    @Test
+    void shouldReturnPlayerWhenItExists() {
+        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
 
     @Test
     void shouldReturnPlayerWhenItExists() throws Exception {
@@ -63,9 +62,10 @@ class PlayerControllerTest {
     }
 
     @Test
-    void shouldReturnCreatedWhenPlayerIsCreated() throws Exception {
-        PlayerResponse player = new PlayerResponse(1L, "Chris Careca", 0,
-                new PlayerResponse.InventoryResponse(List.of(), 3));
+    void shouldReturnCreatedWhenPlayerIsCreated() {
+        CreatePlayerRequest request = new CreatePlayerRequest("Chris Careca");
+        PlayerResponse player = PlayerResponse.from(new Player("Chris Careca"));
+
         when(playerService.create("Chris Careca")).thenReturn(player);
 
         mockMvc.perform(post("/players")

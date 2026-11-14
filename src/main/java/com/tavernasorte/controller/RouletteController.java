@@ -5,6 +5,8 @@ import com.tavernasorte.service.RouletteHistoryService;
 import com.tavernasorte.dto.RouletteHistoryResponse;
 import com.tavernasorte.dto.RoulettePlayRequest;
 import com.tavernasorte.dto.RoulettePlayResponse;
+import com.tavernasorte.dto.RouletteSpinResponse;
+import com.tavernasorte.dto.ApiErrorResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +24,8 @@ public class RouletteController {
     }
 
     @GetMapping("/roleta/girar")
-    public int spin() {
-        return rouletteService.spin();
+    public RouletteSpinResponse spin() {
+        return new RouletteSpinResponse(rouletteService.spin());
     }
 
     @PostMapping("/roleta/{playerId}/jogar")
@@ -35,5 +37,11 @@ public class RouletteController {
     @GetMapping("/roleta/{playerId}/historico")
     public List<RouletteHistoryResponse> history(@PathVariable Long playerId) {
         return historyService.findByPlayer(playerId);
+    }
+
+    @ExceptionHandler(RouletteHistoryService.PlayerNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse playerNotFound(RouletteHistoryService.PlayerNotFoundException exception) {
+        return new ApiErrorResponse(exception.getMessage());
     }
 }

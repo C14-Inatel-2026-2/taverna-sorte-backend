@@ -9,16 +9,12 @@ public record PlayerResponse(Long id, String username, int balance, InventoryRes
     public static PlayerResponse from(Player player) {
         var inventory = player.getInventory();
         var items = inventory.getItems().stream()
-                .map(item -> new ItemResponse(item.getId(), item.getName(), item.getPrice(),
-                        item.getMultiplier(), item.getDescription()))
+                .map(ItemResponse::from)
                 .toList();
         return new PlayerResponse(player.getId(), player.getUsername(), player.getBalance(),
                 new InventoryResponse(items, inventory.getItemLimit()));
     }
 
     public record InventoryResponse(List<ItemResponse> items, int itemLimit) {
-    }
-
-    public record ItemResponse(Long id, String name, int price, int multiplier, String description) {
     }
 }

@@ -20,6 +20,6 @@ public class EnchantedChestController {
     @PostMapping("/chest/open")
     public EnchantedChestResponse open(@Valid @RequestBody EnchantedChestRequest request) {
         return enchantedChestService.open(
-                request.getPlayerId(), request.getBetAmount(), request.getItemId());
+                request.playerId(), request.betAmount(), request.itemId());
     }
 }
