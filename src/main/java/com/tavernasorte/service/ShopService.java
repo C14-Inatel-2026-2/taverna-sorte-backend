@@ -4,6 +4,12 @@ import com.tavernasorte.database.entity.Item;
 import com.tavernasorte.database.entity.Player;
 import com.tavernasorte.database.repository.ItemRepository;
 import com.tavernasorte.database.repository.PlayerRepository;
+import com.tavernasorte.exception.InsufficientBalanceException;
+import com.tavernasorte.exception.InvalidItemException;
+import com.tavernasorte.exception.InvalidPlayerException;
+import com.tavernasorte.exception.InventoryFullException;
+import com.tavernasorte.exception.ItemNotFoundException;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,34 +28,30 @@ public class ShopService {
     }
 
     @Transactional
-    public boolean buyItem(Long playerId, Long itemId) {
-
-        if (playerId == null || itemId == null) {
-            return false;
+    public void buyItem(Long playerId, Long itemId) {
+        if (playerId == null) {
+            throw new InvalidPlayerException("O jogador é obrigatório");
+        }
+        if (itemId == null) {
+            throw new InvalidItemException("O item é obrigatório");
         }
 
-        Player player = playerRepository.findById(playerId).orElse(null);
-        Item item = itemRepository.findById(itemId).orElse(null);
+        Player player = playerRepository.findById(playerId).orElseThrow(PlayerNotFoundException::new);
+        Item item = itemRepository.findById(itemId).orElseThrow(ItemNotFoundException::new);
 
-        if (player == null || item == null) {
-            return false;
-        }
-
-        if (player.getBalance() < item.getPrice()) {
-            return false;
+        if (item.getPrice() <= 0) {
+            throw new InvalidItemException("O preço do item deve ser maior que zero");
         }
 
         if (player.getInventory().getItems().size()
                 >= player.getInventory().getItemLimit()) {
-            return false;
+            throw new InventoryFullException();
         }
 
         if (!player.debit(item.getPrice())) {
-            return false;
+            throw new InsufficientBalanceException("Saldo insuficiente para a compra");
         }
 
         player.getInventory().addItem(item);
-
-        return true;
     }
 }

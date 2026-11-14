@@ -20,13 +20,7 @@ public class PlayerController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PlayerResponse> getPlayer(@PathVariable Long id) {
-        PlayerResponse player = playerService.findById(id);
-
-        if (player == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(player);
+        return ResponseEntity.ok(playerService.findById(id));
     }
 
     @PostMapping
@@ -36,12 +30,7 @@ public class PlayerController {
 
     @PostMapping("/{id}/dance")
     public ResponseEntity<Void> danceForGnome(@PathVariable Long id) {
-        boolean success = playerService.danceForGnome(id);
-
-        if (!success) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        playerService.danceForGnome(id);
         return ResponseEntity.ok().build();
     }
 }

@@ -8,7 +8,6 @@ import com.tavernasorte.dto.RoulettePlayResponse;
 import com.tavernasorte.dto.RouletteSpinResponse;
 import com.tavernasorte.dto.ApiErrorResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

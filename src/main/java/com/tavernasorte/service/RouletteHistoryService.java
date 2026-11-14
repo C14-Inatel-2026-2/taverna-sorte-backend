@@ -5,6 +5,7 @@ import com.tavernasorte.database.repository.PlayerRepository;
 import com.tavernasorte.database.repository.RouletteHistoryRepository;
 import com.tavernasorte.dto.RouletteHistoryResponse;
 import com.tavernasorte.dto.RoulettePlayResponse;
+import com.tavernasorte.exception.PlayerNotFoundException;
 import com.tavernasorte.model.RouletteBetType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,11 +43,5 @@ public class RouletteHistoryService {
         return history.findByPlayer_IdOrderByPlayedAtDescIdDesc(playerId).stream()
                 .map(entry -> new RouletteHistoryResponse(entry.getId(), entry.getPlayedAt(), entry.getResult()))
                 .toList();
-    }
-
-    public static class PlayerNotFoundException extends RuntimeException {
-        public PlayerNotFoundException() {
-            super("Jogador não encontrado");
-        }
     }
 }

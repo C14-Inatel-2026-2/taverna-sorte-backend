@@ -1,5 +1,6 @@
 package com.tavernasorte.database.entity;
 
+import com.tavernasorte.exception.InvalidBalanceException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -49,10 +50,10 @@ public class Player {
 
     public void addBalance(int value) {
         if (value <= 0) {
-            throw new IllegalArgumentException("O valor do crédito deve ser maior que zero");
+            throw new InvalidBalanceException("O valor do crédito deve ser maior que zero");
         }
         if (balance < MIN_BALANCE || balance > MAX_BALANCE || value > MAX_BALANCE - balance) {
-            throw new IllegalArgumentException("O crédito ultrapassa o saldo máximo de 1000000 moedas");
+            throw new InvalidBalanceException("O crédito ultrapassa o saldo máximo de 1000000 moedas");
         }
         balance += value;
     }

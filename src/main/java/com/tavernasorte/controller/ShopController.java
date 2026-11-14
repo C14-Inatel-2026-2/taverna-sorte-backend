@@ -42,12 +42,7 @@ public class ShopController {
             @PathVariable Long playerId,
             @PathVariable Long itemId) {
 
-        boolean success = shopService.buyItem(playerId, itemId);
-
-        if (!success) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        shopService.buyItem(playerId, itemId);
         return ResponseEntity.ok().build();
     }
 }
