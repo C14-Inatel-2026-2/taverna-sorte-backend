@@ -7,40 +7,36 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
+import com.tavernasorte.dto.ApiErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(PlayerNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handlePlayerNotFound(PlayerNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", exception.getMessage()));
+    public ResponseEntity<ApiErrorResponse> handlePlayerNotFound(PlayerNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(EmailAlreadyInUseException.class)
-    public ResponseEntity<Map<String, String>> handleEmailAlreadyInUse(
+    public ResponseEntity<ApiErrorResponse> handleEmailAlreadyInUse(
             EmailAlreadyInUseException exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of(
-                        "error", exception.getMessage()
-                ));
+                .body(new ApiErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler({InvalidBetException.class, InvalidItemException.class})
-    public ResponseEntity<Map<String, String>> handleBusinessError(
+    public ResponseEntity<ApiErrorResponse> handleBusinessError(
             IllegalArgumentException exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "error", exception.getMessage()
-                ));
+                .body(new ApiErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(
+    public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException exception
     ) {
         String message = exception.getBindingResult()
@@ -52,30 +48,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "error", message
-                ));
+                .body(new ApiErrorResponse(message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadable(
             HttpMessageNotReadableException exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "error", "Valor inválido na requisição"
-                ));
+                .body(new ApiErrorResponse("Valor inválido na requisição"));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleUnexpectedException(
+    public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
             Exception exception
     ) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                        "error", "Erro interno do servidor"
-                ));
+                .body(new ApiErrorResponse("Erro interno do servidor"));
     }
 }

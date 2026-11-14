@@ -1,6 +1,7 @@
 package com.tavernasorte.controller;
 
 import com.tavernasorte.database.entity.Item;
+import com.tavernasorte.dto.ItemResponse;
 import com.tavernasorte.service.ItemService;
 import com.tavernasorte.service.ShopService;
 import org.springframework.http.ResponseEntity;
@@ -21,19 +22,19 @@ public class ShopController {
     }
 
     @GetMapping("/items")
-    public ResponseEntity<List<Item>> getItems() {
-        return ResponseEntity.ok(itemService.findAll());
+    public ResponseEntity<List<ItemResponse>> getItems() {
+        return ResponseEntity.ok(itemService.findAll().stream().map(ItemResponse::from).toList());
     }
 
     @GetMapping("/items/{id}")
-    public ResponseEntity<Item> getItem(@PathVariable Long id) {
+    public ResponseEntity<ItemResponse> getItem(@PathVariable Long id) {
         Item item = itemService.findById(id);
 
         if (item == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(item);
+        return ResponseEntity.ok(ItemResponse.from(item));
     }
 
     @PostMapping("/purchase/{playerId}/{itemId}")

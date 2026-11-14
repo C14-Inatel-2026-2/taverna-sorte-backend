@@ -7,52 +7,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public class EnchantedChestRequest {
-
-    @NotNull(message = "O jogador é obrigatório")
-    @Positive(message = "O identificador do jogador deve ser positivo")
-    private Long playerId;
-
-    @NotNull(message = "O valor da aposta é obrigatório")
-    @Min(value = 1, message = "O valor da aposta deve ser maior que zero")
-    @Max(value = ChestBetValue.MAXIMUM, message = ChestBetValue.INVALID_MAXIMUM_VALUE)
-    private Integer betAmount;
-
-    @Positive(message = "O identificador do item deve ser positivo")
-    private Long itemId;
-
-    public EnchantedChestRequest() {
-    }
-
-    public EnchantedChestRequest(Long playerId, Integer betAmount, Long itemId) {
-        this.playerId = playerId;
-        this.betAmount = betAmount;
-        this.itemId = itemId;
-    }
-
-    public Long getPlayerId() {
-        return playerId;
-    }
-
-    public void setPlayerId(Long playerId) {
-        this.playerId = playerId;
-    }
-
-    public Integer getBetAmount() {
-        return betAmount;
-    }
-
-    public void setBetAmount(Integer betAmount) {
-        this.betAmount = betAmount;
-    }
-
-    public Long getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(Long itemId) {
-        this.itemId = itemId;
-    }
+public record EnchantedChestRequest(
+        @NotNull(message = "O jogador é obrigatório")
+        @Positive(message = "O identificador do jogador deve ser positivo") Long playerId,
+        @NotNull(message = "O valor da aposta é obrigatório")
+        @Min(value = 1, message = "O valor da aposta deve ser maior que zero")
+        @Max(value = ChestBetValue.MAXIMUM, message = ChestBetValue.INVALID_MAXIMUM_VALUE) Integer betAmount,
+        @Positive(message = "O identificador do item deve ser positivo") Long itemId
+) {
 
     @JsonAnySetter
     private void rejectUnknownField(String name, Object value) {

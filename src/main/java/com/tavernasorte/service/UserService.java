@@ -21,15 +21,15 @@ public class UserService {
     }
 
     public CreateUserResponse create(CreateUserRequest request) {
-        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        String email = request.email().trim().toLowerCase(Locale.ROOT);
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyInUseException();
         }
 
         User user = new User(
-                request.getName().trim(),
+                request.name().trim(),
                 email,
-                passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(request.password())
         );
 
         return toResponse(userRepository.save(user));

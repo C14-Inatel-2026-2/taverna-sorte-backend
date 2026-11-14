@@ -31,7 +31,7 @@ public class PlayerController {
 
     @PostMapping
     public ResponseEntity<PlayerResponse> create(@Valid @RequestBody CreatePlayerRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(playerService.create(request.getUsername()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(playerService.create(request.username()));
     }
 
     @PostMapping("/{id}/dance")
