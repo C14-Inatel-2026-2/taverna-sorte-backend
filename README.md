@@ -4,6 +4,8 @@ Backend de uma taverna medieval com moedas, inventário, loja e minigames, desen
 
 O frontend oficial é desenvolvido em Flutter, em outro repositório: [taverna-sorte-frontend](https://github.com/C14-Inatel-2026-2/taverna-sorte-frontend).
 
+**Deploy da API:** [Taverna da Sorte no Render](https://taverna-sorte-backend.onrender.com).
+
 ## Navegação
 
 - [Equipe e papéis](#equipe-e-papéis)
